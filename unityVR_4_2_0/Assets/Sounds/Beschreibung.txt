@@ -1,0 +1,3 @@
+Dieser Ordner enthält Sounds für Unity 3d
+-----------------------------------------
+-crash-laut - ein SOund, wenn etwas Kaputtgeht / zerspringt

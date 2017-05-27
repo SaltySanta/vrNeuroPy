@@ -1,0 +1,286 @@
+\documentclass[a4paper,11pt,oneside,pdftex]{scrartcl}
+
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+\usepackage[english,german]{babel}
+\usepackage{fontenc}
+\usepackage{graphicx}
+
+%\usepackage[pdftex]{hyperref}
+\usepackage{listings}
+\usepackage{color}
+ 
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+ 
+\newcounter{enumi_saved}
+\newcommand{\breaktable}{%
+ \setcounter{enumi_saved}{\value{enumi}}
+ \end{enumerate}
+ \begin{enumerate}
+ \setcounter{enumi}{\value{enumi_saved}}
+}
+
+\lstset{ %
+  basicstyle=\footnotesize,           % the size of the fonts that are used for the code
+  numbers=left,                   % where to put the line-numbers
+  numberstyle=\tiny\color{gray},  % the style that is used for the line-numbers
+  stepnumber=2,                   % the step between two line-numbers. If it's 1, each line 
+                                  % will be numbered
+  numbersep=5pt,                  % how far the line-numbers are from the code
+  backgroundcolor=\color{white},      % choose the background color. You must add \usepackage{color}
+  showspaces=false,               % show spaces adding particular underscores
+  showstringspaces=false,         % underline spaces within strings
+  showtabs=false,                 % show tabs within strings adding particular underscores
+  frame=single,                   % adds a frame around the code
+  rulecolor=\color{black},        % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. commens (green here))
+  tabsize=2,                      % sets default tabsize to 2 spaces
+  captionpos=b,                   % sets the caption-position to bottom
+  breaklines=true,                % sets automatic line breaking
+  breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+   keywordstyle=\color{blue},          % keyword style
+  commentstyle=\color{dkgreen},       % comment style
+  stringstyle=\color{mauve},         % string literal style
+  escapeinside={\%*}{*)},            % if you want to add LaTeX within your code
+  morekeywords={*,...}               % if you want to add more keywords to the set
+}
+
+\begin{document}
+ \title{Tutorial: Adding new messages in Protobuf}
+ \date{}
+\author{Michael Schreier}
+\maketitle
+\begin{abstract}
+ This document intends to give an advice for adding new messages in Protobuf (with C++ in ANNarchy) and Protobuf-Net (with C\# in SimpleNetwork).
+ I will go through the process by example by adding the new message \emph{MsgAgentGrapPos}, but neither explain the message syntax nor how to use it. 
+\end{abstract}
+
+
+\section{Adding the message in ANNarchy}
+
+\begin{enumerate}
+ \item Open \emph{ANNarchy-2.2/protobuf/MsgObject.proto}.
+ \item Add the listing
+\begin{lstlisting}
+message MsgAgentGraspPos {
+  required int32 actionID = 1;
+  required float targetX = 2;
+  required float targetY = 3;
+}
+\end{lstlisting}
+ \item Add a new line in the existing \emph{MsgObject}.
+\begin{lstlisting}
+optional MsgAgentGraspPos msgAgentGraspPos = 13;
+\end{lstlisting}
+Here I added it as the 13th entity, so note that each new message must have a new ID.
+\item Run \begin{lstlisting}
+protoc MsgObject.proto --cpp_out=.
+\end{lstlisting}
+ \item Copy the resulting \emph{MsgObject.pb.cc} and \emph{MsgObject.pb.h} in ANNarchys \emph{include}
+and \emph{src} directory.
+\item Optionally: Open \emph{MsgObject.pb.cc} and customize the line 
+\begin{lstlisting}
+#include "MsgObject.pb.h"
+\end{lstlisting}
+for your purpose or change the include directories in Eclipse.
+\item Now the new message is ready to be used.
+
+
+\item The last step is adding a new public member function to the \emph{AnnarProtoSend} class. This function
+will encapsulate the construction and sending of the \emph{MsgObject}.
+Don't forget to add the function in both, \emph{AnnarProtoSend.h} and \emph{AnnarProtoSend.cpp}.
+\begin{lstlisting}
+int AnnarProtoSend::sendGraspPos(float targetX, float targetY)
+{
+	MsgObject * unit = new MsgObject();
+	int id = rand();
+	unit->mutable_msgagentgrasppos()->set_actionid(id);
+	unit->mutable_msgagentgrasppos()->set_targetx(targetX);
+	unit->mutable_msgagentgrasppos()->set_targety(targetY);
+
+	mutex = true;
+	sentQueue.push(unit);
+	mutex = false;
+	return id;
+}
+\end{lstlisting}
+\end{enumerate}
+\section{Adding the message in SimpleNetwork (with Protobuf-Net)}
+
+\begin{enumerate}
+\item Open the \emph{SimpleNetwork}-Project.
+\item Add a new class \emph{MsgAgentGraspPos} in the \emph{Msg} folder. This will create the new file \emph{MsgAgentGraspPos.cs}.
+\item Edit \emph{MsgAgentGraspPos.cs}.
+\begin{lstlisting}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using ProtoBuf;
+
+namespace SimpleNetwork
+{
+    [Serializable, ProtoContract]
+    public class MsgAgentGraspPos
+    {
+        [ProtoMember(1, IsRequired = true)]
+        public Int32 actionID;       
+        [ProtoMember(2, IsRequired = true)]
+        public float targetX;    
+        [ProtoMember(3, IsRequired = true)]
+        public float targetY;
+    }
+} 
+\end{lstlisting}
+\item Edit \emph{MsgObject.cs} and add
+\begin{lstlisting}
+        [ProtoMember(13)]
+        public MsgAgentGraspPos msgAgentGraspPos;   
+\end{lstlisting}
+Here, same as above. Each new entity must have a new ID.
+\item Build \emph{SimpleNetwork}-Project.
+\item Now the assembly \emph{SimpleNetwork.dll} can be used with the new message\\\emph{MsgAgentGraspPos}.
+
+\item In our Project "Kinderzimmer" (Children's room), the \emph{update} functions of \emph{BehaviourScript} and \emph{AgentScript} are responsible for the message handling. For each protobuf message, there also exists a protected virtual function, which will be customized in derived classes of \emph{AgentScript}.
+
+Here is the  \emph{update} of \emph{AgentScript}
+\begin{lstlisting}
+void Update()
+{
+	#region handle incoming msg
+	if(MySimpleNet != null){
+	
+	if (MySimpleNet.MsgAvailable()) {
+
+		MsgObject NextMsg = MySimpleNet.Receive();
+
+		[...]
+           	
+		if(NextMsg.msgAgentGraspPos != null) {
+                	processMsgAgentGrapPos( NextMsg.msgAgentGraspPos );
+          	}
+
+		[...]
+
+	}
+}\end{lstlisting}
+and the message handling function for \emph{MsgAgentGraspPos}
+\begin{lstlisting}
+protected virtual void processMsgAgentGrapPos( MsgAgentGraspPos msg )
+    {
+        Debug.Log(String.Format("AgentGraspPos recived ({0:f},{1:f})",
+                        msg.targetX,
+                        msg.targetY));
+    }
+\end{lstlisting}
+
+
+
+
+
+For a new protobuf message, the if-switch in the \emph{update} function must be extented and a new protected virtual function added.
+
+
+
+\end{enumerate}
+
+\newpage
+\section{Appendix: Sending in C\#/Receiving in C++}
+
+I explained in the first two sections the work process for adding the \emph{MsgAgentGraspPos} message. This section explains, what to do, if you want to receive data in C++ and send data from C\# with a message (e.g. the \emph{MsgGridPosition} message).
+
+\subsection*{Sending data from C\#}
+
+Sending protobuf data is simple. For example \emph{MsgGridPosition} is sent in the \emph{AgentScript} \emph{Update()} with:
+\begin{lstlisting}
+void Update()
+{
+	[...]
+	if (SendGridPosition) {
+		MySimpleNet.Send(new MsgGridPosition(){
+			targetX = gameObject.transform.position.x,
+			targetY = gameObject.transform.position.y,
+			targetZ = gameObject.transform.position.z
+		});
+	}
+	[...]
+}
+\end{lstlisting}
+
+\subsection*{Receiving data in C++}
+\begin{enumerate}
+\item Add and initialize member variables for the \emph{MsgGridPosition} message in\\ \mbox{AnnarProtoReceive}.
+
+AnnarProtoReceive.h
+\begin{lstlisting}
+class AnnarProtoReceive{
+	[...]
+	bool validGridsensor_;
+	float targetX_;          
+	float targetY_;        
+	float targetZ_;
+	[...]
+}
+\end{lstlisting}
+AnnarProtoReceive.cpp
+\begin{lstlisting}
+AnnarProtoReceive::AnnarProtoReceive(int socketVR, int socketAgent)
+{
+	[...]
+
+	validGridsensor_ = false;
+	targetX_ = 0;
+	targetY_ = 0;
+	targetZ_ = 0;
+
+	[...]
+}
+\end{lstlisting}
+
+\item Add a new getter function for this message.
+
+AnnarProtoRecive.cpp
+\begin{lstlisting}
+bool AnnarProtoReceive::getGridsensorData(float& targetX, float& targetY, float& targetZ)
+{
+	if(!validGridsensor_)
+		return false;
+	waitForMutexUnlock();
+
+	targetX = targetX_;
+	targetY = targetY_;
+	targetZ = targetZ_;
+	return true;
+}
+
+\end{lstlisting}
+
+\item Add a new if-switch to the \emph{AnnarProtoReceive::storeData} function.
+
+\begin{lstlisting}
+void AnnarProtoReceive::storeData(long int dataLength)
+{
+[...]
+	if(tmp->has_msggridposition())
+	{
+		assert(tmp->msggridposition().has_targetx());
+		mutex = true;
+		targetX_ = tmp->msggridposition().targetx();
+		targetY_ = tmp->msggridposition().targety();
+		targetZ_ = tmp->msggridposition().targetz();
+		validGridsensor_ = true;
+		mutex = false;
+	}
+[...]
+}
+\end{lstlisting}
+\item Now the data of a \emph{MsgGridPosition} message can be received by
+\begin{lstlisting}
+receiver->getGridsensorData(agentX, agentY, agentZ)
+\end{lstlisting}
+\end{enumerate}
+
+
+
+\end{document}

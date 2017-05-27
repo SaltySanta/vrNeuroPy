@@ -1,0 +1,42 @@
+Testcases specification
+
+A = Agent, VR = virtuell reality
+
+In this document, every executed action is specified for both sides (Vr and agent). If the actions are correct, this should be directly visually checked at the VR side and checked via the saved images at the agent side.
+
+Actions (Numbers denotes FSM states at agent side):
+
+      A: Connecting
+      A: Reset the environment
+     VR: Continously image sending
+      A: Continously image saving
+ 0 -  A: Send agent movement (30 distance, 330 degree)
+ 1 -  A: Wait for execution
+ 2 - VR: Send agent grid sensor data
+	  A: Send agent rotation
+	 VR: Send agent grid sensor data
+ 3 -  A: Send eye movement (-20°, -18°, 10°)
+ 4 -  A: Send eye fixation (37 , 10 , 24 ) (currently commented out)
+ 6 - VR: Send agent grid sensor data
+	  A: Save agent position and send agent movement (30 distance, 270 degree)
+ 7 -  A: Wait for execution, then save agent position and print out expected and real position
+ 8 - VR: Click the reward button in the VR and send 100 units of reward
+	  A: Wait for reward
+ 9 -  A: Send agent movement (300 distance, 0 degree)
+10 -  A: Wait for collision
+11 -  A: Reset the trial
+12 -  A: Close the connections and the ports
+	  A: Re-Connect
+13 -  A: Send agent movement (30 distance, 290 degree)
+14 -  A: Send agent movement (30 distance, 180 degree) 
+15 -  A: Read out a Action-Abort msg and wait for execution (16)
+16 - VR: Click on the "agenttest" button in the VR
+	  A: Wait for receiving the menu item message
+17 -  A: Send a grasp movement towards a certain position (100, 100). This produces at the moment only a Debug-Log message in the VR
+18 -  A: Send a grasp movement towards the object with ID 1337. This produces at the moment only a Debug-Log message in the VR
+      
+	  A: Close then the connection
+
+
+
+

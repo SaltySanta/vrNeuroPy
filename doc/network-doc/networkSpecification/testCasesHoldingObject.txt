@@ -1,0 +1,28 @@
+Testcases specification for children room
+
+A = Agent, VR = virtuell reality
+
+In this document, every executed action is specified for both sides (Vr and agent). If the actions are correct, this should be directly visually checked at the VR side and checked via the saved images at the agent side.
+
+Actions (Numbers denotes FSM states at agent side):
+
+      A: Connecting
+      A: Reset the environment (standardposition is in front of the table)
+ 0 -  A: Send eye fixation on on the yellow car to the right (other possibilities are commented out)
+	  A: Grasp the focused object
+ 1 -  A: Wait for execution
+ 2 -  A: Send agent movement(0 degrees, 7 distance)
+ 3 -  A: Wait for execution and check for collisions
+ 4 -  A: Send grasp release
+ 5 -  A: Wait for execution
+ 6 -  A: Reset the trial (standardposition is in front of the table) and look down (0,0,-30)
+	  A: Grasp ID (a sphere with a different rigidbody)
+ 7 -  A: Wait for execution
+ 8 -  A: Send agent movement(0 degrees, 6 distance)
+ 9 -  A: Wait for execution and check for collisions
+
+	  A: Close then the connection
+
+
+
+

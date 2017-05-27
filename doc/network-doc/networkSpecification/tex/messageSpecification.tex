@@ -1,0 +1,286 @@
+\documentclass[a4paper,10pt]{scrartcl}
+\usepackage[utf8x]{inputenc}
+
+
+\setlength{\parindent}{0mm} %bei neuem Absatz nicht einruecken
+\setlength{\parskip}{0.4em} % 0.4 Zeile bei neuem Absatz
+\linespread{1.1} %Zeilenabstand
+
+
+\begin{document}
+
+% Title Page
+\section*{Message specification}
+This document describes the behavior, type and parameters of each message.
+
+General idea: We use an own container for each message to avoid unspecific names of container items like ``Parameter1''. Each message is then packed in an abstract container of type \emph{MsgObject}. The underlying library for sending/receiving is protobuf from Google.
+%should be clearer and easier to extend as the current one. The planned messages are also compatible with the currently existing interfaces in C++ OK and C\#.
+
+%General idea: we use for each message an own container to avoid unspecific names of container items like ``Parameter1''. This naming system of the messages 
+%should be clearer and easier to extend as the current one. The planned messages are also compatible with the currently existing interfaces in C++ OK and C\#.
+
+\tableofcontents
+
+\section{Agent $\rightarrow$ VR}
+
+\subsection{Agent movement}
+Execute a movement of the agent. \\
+Message name: MsgAgentMovement
+\begin{description}
+ \item [actionID] Int32, a randomizied value to identify the action.
+ \item [degree] Float32, the direction to walk in degree(0 to 360°). This direction is relative to the world- or global coordinate system.
+ \item [distance] Float, the distance to walk.
+\end{description}
+The execution will be only started by this message, hence it is executed asynchronously. During the execution, the VR sends messages of type \emph{MsgActionExecutationStatus} with \emph{status=0}. If the execution is finished, the agent will receive a message of type \emph{MsgActionExecutationStatus} with \emph{status=1}.
+
+\subsection{Agent movement to a certain position}
+Execute a movement of the agent to a certain position along a path. Currently only usable in the SpartialCognition scene which has space grid and A* search.\\
+Message name: MsgAgentMoveTo
+\begin{description}
+ \item [actionID] Int32, a randomizied value to identify the action.
+ \item [x] Float value, the X-coordinate of the target point.
+ \item [y] Float value, the Y-coordinate of the target point.
+ \item [z] Float value, the Z-coordinate of the target point.
+\item
+\end{description}
+
+\subsection{Cancel movement to a certain position}
+Cancels a movement to a certain point (MsgAgentMoveTo).\\
+Message name: MsgAgentCancelMoveTo
+\begin{description}
+ \item [actionID] Int32, a randomizied value to identify the action.
+\item
+\end{description}
+
+\subsection{Eye movement}
+This command rotates the eyes of the agent.\\
+Message name: MsgAgentEyemovement
+\begin{description}
+ \item [actionID] Int32, a randomized value to identify the action.
+ \item [panLeft] Float32, the rotation angle of the left eye in horizontal direction (positive values rotate it leftwards). The view angle range is -30 to +30°.
+ \item [panRight] Float32, the rotation angle of the right eye in horizontal direction (positive values rotate it leftwards). The view angle range is -30 to +30°.
+ \item [tilt] Float32, the rotation angle of the left and right eye in vertical direction. The view angle range is -30 to +30°.
+\end{description}
+The eye movement is executed immediately, hence the VR sends no messages of  \emph{MsgActionExecutationStatus} because nobody would see the animation of the eyes. This command should also execute an animation to move/rotate the head in the desired direction.
+
+\subsection{Eye fixation}
+This command fixates the eyes at a certain point  in the world coordinate system.\\
+Message name: MsgAgentEyefixation
+\begin{description}
+ \item [actionID] Int32, a randomized value to identify the action.
+ \item [targetX] Float32, the X-coordinate of the target point.
+ \item [targetY] Float32, the Y-coordinate of the target point.
+ \item [targetZ] Float32, the Z-coordinate of the target point.
+\end{description}
+The VR executes the fixation immediately and hold it until a message of type \emph{MsgAgentEyemovement} occurs.
+
+Because nobody would see the animation of the eyes, this command should also execute an animation to move/rotate the head in the desired direction.
+At the moment, there is no check if the eyes can really be rotated in the specific direction, hence the agent could also see things at its back. 
+
+\subsection{Environment Reset}
+Send a command that sets the VR back to a chosen state. This message should be used for restarting the whole experiment.\\
+Message name: MsgEnvironmentReset
+\begin{description}
+ \item [Type] Optional Int32, a parameter that selects one configuration if there are more than one.
+\end{description}
+
+\subsection{Trial Reset}
+Send a command that sets partly the VR back to an chosen state. This message should be used for starting a new trial in an experiment.\\
+Message name: MsgTrialReset
+\begin{description}
+ \item [Type] Optional Int32, a parameter that selects one configuration if there are more than one.
+\end{description}
+
+\subsection{Grasp an object at a certain position}
+Try to grasp an object at the given position, specified in the viewfield coordinate system of the left eye.\\
+Message name: MsgAgentGraspPos 
+\begin{description}
+ \item [actionID] Int32, the value to identify the current action. Coordinate 0/0 is in the upper left corner.
+ \item [targetX] Float value, the X-coordinate of the position in the coordinate system of the left eye.
+ \item [targetY] Float value, the Y-coordinate of the position in the coordinate system of the left eye.
+\end{description}
+
+\subsection{Grasp a certain object}
+Try to grasp an object with the given ID.\\
+Message name: MsgAgentGraspID
+\begin{description}
+ \item [actionID] Int32, the value to identify the current action.
+ \item [objectID] Int32, the value to identify the target object. The mapping value to unity object depends on the current scenario.
+\end{description}
+
+\subsection{Release a grasped object}
+Releases an object if grasped and held.\\
+Message name: MsgAgentGraspRelease
+\begin{description}
+ \item [actionID] Int32, the value to identify the current action.
+\end{description}
+
+\subsection{Point at a certain position}
+Point at a position, specified in the viewfield coordinate system of the left eye. Coordinate 0/0 is in the upper left corner.\\
+Message name: MsgAgentPointPos 
+\begin{description}
+ \item [actionID] Int32, the value to identify the current action.
+ \item [targetX] Float value, the X-coordinate of the position in the coordinate system of the left eye.
+ \item [targetY] Float value, the Y-coordinate of the position in the coordinate system of the left eye.
+\end{description}
+
+\subsection{Point at a certain object}
+Point at an object with the given ID.\\
+Message name: MsgAgentPointID
+\begin{description}
+ \item [actionID] Int32, the value to identify the current action.
+ \item [objectID] Int32, the value to identify the target object. The mapping value to unity object depends on the current scenario.
+\end{description}
+
+\subsection{Interact with an object at a certain position}
+Interact with an object at a given position, specified in the viewfield coordinate system of the left eye. Coordinate 0/0 is in the upper left corner.
+The type of interaction should be spezified and implemented in the VR itself.\\
+Message name: MsgAgentInteractionPos 
+\begin{description}
+ \item [actionID] Int32, the value to identify the current action.
+ \item [targetX] Float value, the x coordinate of the position in the coordinate system of the left eye.
+ \item [targetY] Float value, the y coordinate of the position in the coordinate system of the left eye.
+\end{description}
+
+\subsection{Interact with a certain object}
+Interact with an object with the given ID.
+The type of interaction should be spezified and implemented in the VR itself.\\
+Message name: MsgAgentInteractionID
+\begin{description}
+ \item [actionID] Int32, the value to identify the current action.
+ \item [objectID] Int32, the value to identify the target object. The mapping value to unity object depends on the current scenario.
+\end{description}
+
+\subsection{Turn}
+Turns the Agent around the vertical axis.\\
+Message name: MsgAgentTurn
+\begin{description}
+ \item [actionID] Int32, the value to identify the current action.
+ \item [degree] Float value, the angle for the clockwise turn relative to the current direction of the agent.
+\end{description}
+
+
+\newpage
+
+
+\section{VR $\rightarrow$ Agent}
+
+\subsection{External reward}
+Delivers reward to the agent.\\
+Message name: MsgReward
+\begin{description}
+ \item [reward] float, the user-specified external reward for the agent.
+\end{description}
+
+\subsection{Grid sensor}
+This delivers the coordinates of the agent, like a GPS device. It is standardly disabled and could be enabled by \emph{AgentScript::SendGridPosition=true}.\\
+Message name: MsgGridPosition
+\begin{description}
+ \item [targetX] Float32, the X-coordinate of the agent.
+ \item [targetY] Float32, the Y-coordinate of the agent.
+ \item [targetZ] Float32, the Z-coordinate of the agent.
+ \item [targetRotationX] Float32, the X-coordinate of the agent's rotation in the world.
+ \item [targetRotationY] Float32, the Y-coordinate of the agent's rotation in the world.
+ \item [targetRotationZ] Float32, the Z-coordinate of the agent's rotation in the world.
+\end{description}
+
+\subsection{Action execution status}
+Delivers the execution status of the last action.\\
+Message name: MsgActionExecutationStatus
+\begin{description}
+ \item [actionID] Int32, the value to identify the action.
+ \item [status] Int32, An enum describing the execution status of the action: 0= in execution; 1 = finished; 2 = aborted because of a new action of the same type.
+\end{description}
+
+\subsection{Collision}
+Detect an collision.\\
+Message name: MsgCollision
+\begin{description}
+ \item [actionID] Int32, the value to identify the current action.
+ \item [colliderID] Int32, the ID of the collided item.
+\end{description}
+
+\subsection{Eye position}
+Delivers status information of the eyes of the agent.\\
+Message name: MsgEyePosition
+\begin{description}
+ \item [rotationPositionX] Float value, X-coordinate of current rotation positon.
+ \item [rotationPositionY] Float value, Y-coordinate of current rotation positon.
+ \item [rotationPositionZ] Float value, Z-coordinate of current rotation positon.
+ \item [rotationVelocityX] Float value, X-coordinate of current rotation alteration (per frame).
+ \item [rotationVelocityY] Float value, Y-coordinate of current rotation alteration (per frame).
+ \item [rotationVelocityZ] Float value, Z-coordinate of current rotation alteration (per frame).
+\end{description}
+
+\subsection{Head Motion}
+Delivers status information of the agent.\\
+Message name: MsgHeadMotion
+\begin{description}
+ \item [accelerationX] Float value, speedup X-coordinate of current movement (per frame).
+ \item [accelerationY] Float value, speedup Y-coordinate of current movement (per frame).
+ \item [accelerationZ] Float value, speedup Z-coordinate of current movement (per frame).
+ \item [rotationAccelerationX] Float value, speedup X-coordinate of current rotation (per frame).
+ \item [rotationAccelerationY] Float value, speedup Y-coordinate of current rotation (per frame).
+ \item [rotationAccelerationZ] Float value, speedup Z-coordinate of current rotation (per frame).
+ \item [rotationVelocityX] Float value, X-coordinate of current rotation alteration (per frame).
+ \item [rotationVelocityY] Float value, X-coordinate of current rotation alteration (per frame).
+ \item [rotationVelocityZ] Float value, X-coordinate of current rotation alteration (per frame).
+ \item [velocityX] Float value, X-coordinate of current movement alteration (per frame).
+ \item [velocityY] Float value, Y-coordinate of current movement alteration (per frame).
+ \item [velocityZ] Float value, Z-coordinate of current movement alteration (per frame).
+\end{description}
+
+\subsection{Image}
+Send stereo image data. Make sure that the bool member \emph{SendImages} in the function \emph{void Update ()} of \emph{AgentScript} is true.\\
+Message name: MsgImages
+\begin{description}
+ \item [leftImage] Byte [], the byte data of the left image in png-format.
+ \item [rightImage] Byte [], the byte data of the right image in png-format.
+\end{description}
+
+\subsection{Menu item}
+Send a command created by the user controlling the VR.\\
+Message name: MsgMenu
+\begin{description}
+ \item [eventID] Int32, an enum to identify the event: 0 = start simulation, 1= stop simulation.
+ \item [parameter] Optional string, an string to send additional parameters.
+\end{description}
+
+
+\newpage
+
+
+\section{Data container}
+A container class which can contain all types of messages. It can also contain a debug message.
+VR $\rightarrow$ Agent. Agent $\rightarrow$ VR.\\
+Message name: MsgObject
+\begin{description}
+  \item [msgAgentMovement] Optional MsgAgentMovement
+  \item [msgAgentMoveTo] Optional MsgAgentMoveTo
+  \item [msgAgentCancelMoveTo] Optional MsgAgentCancelMoveTo
+  \item [msgAgentEyemovement] Optional MsgAgentEyemovement
+  \item [msgAgentEyefixation] Optional MsgAgentEyefixation
+  \item [msgEnvironmentReset] Optional MsgEnvironmentReset
+  \item [msgTrialReset] Optional MsgTrialReset
+  \item [msgAgentGraspPos] Optional MsgAgentGraspPos
+  \item [msgAgentGraspID] Optional MsgAgentGraspID
+  \item [msgAgentGraspRelease] Optional MsgAgentGraspRelease
+  \item [msgAgentPointPos] Optional MsgAgentPointPos
+  \item [msgAgentPointID] Optional MsgAgentPointID
+  \item [msgAgentInteractionPos] Optional MsgAgentInteractionPos
+  \item [msgAgentInteractionID] Optional MsgAgentInteractionID 
+  \item [msgAgentTurn] Optional MsgAgentTurn
+  \item [msgReward] Optional MsgReward
+  \item [msgGridPosition] Optional MsgGridPosition
+  \item [msgActionExecutationStatus] Optional MsgActionExecutationStatus
+  \item [msgCollision] Optional MsgCollision
+  \item [msgEyePosition] Optional MsgEyePosition
+  \item [msgHeadMotion] Optional MsgHeadMotion 
+  \item [msgImages] Optional MsgImages
+  \item [msgMenu] Optional MsgMenu
+  \item [msgAnnarNetwork] Optional MsgAnnarNetwork
+  \item [msgStartSync] Optional MsgStartSync
+  \item [msgStopSync] Optional MsgStopSync
+\end{description}
+
+\end{document}          

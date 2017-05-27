@@ -1,0 +1,37 @@
+Testcases specification for children room
+
+A = Agent, VR = virtuell reality
+
+In this document, every executed action is specified for both sides (Vr and agent). If the actions are correct, this should be directly visually checked at the VR side and checked via the saved images at the agent side.
+
+Actions (Numbers denotes FSM states at agent side):
+
+      A: Connecting
+      A: Reset the environment (standardposition is in the middle of the room)
+     VR: Continously image sending
+      A: Continously image saving
+ 0 -  A: Send agent movement to the table(163 degree, 7.7 distance)
+ 1 -  A: Wait for execution
+ 2 -  A: Send eye movement (5,5,10 ) and wait for execution (waiting is currently not implemented, so sleep 2s)
+ 3 -  A: Send eye fixation at the clock (-4.14, 1.35, 0.76) and wait for execution (waiting is currently not implemented, so sleep 2s)
+ 4 - VR: Send agent grid sensor data
+      A: Save agent position and rotation and send agent movement (270, 3)
+ 5 -  A: Wait for execution, then save agent position and print out expected and real position
+ 6 -  A: Reset eyes by send eye movement (0,0,0) and send agent huge movement (45 degree, 30 distance)
+ 7 -  A: Wait for collision
+ 8 -  A: Reset the trial (standardposition is in front of the table) and look down (0,0,-30)
+ 9 -  A: Send grasp id ( id==1 of middle ball)
+10 -  A: Wait for execution
+11 -  A: Send grasp release 
+12 -  A: Wait for execution
+13 -  A: Send grasp position ( x/y position in the left image of the right yellow car)
+14 -  A: Wait for execution
+15 -  A: Release and send grasp id ( id==2 of the left ball) and do not wait for execution
+16 -  A: Send grasp position ( x/y position in the left image of the right yellow car) 
+17 -  A: Read out a Action-Abort msg and wait for execution
+
+	  A: Close then the connection
+
+
+
+
