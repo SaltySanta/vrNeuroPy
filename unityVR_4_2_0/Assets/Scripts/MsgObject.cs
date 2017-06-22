@@ -46,7 +46,7 @@ namespace SimpleNetwork
         public MsgGridPosition msgGridPosition;
 
         [ProtoMember(6)]
-        public MsgActionExecutationStatus msgActionExecutationStatus;
+        public MsgActionExecutionStatus msgActionExecutationStatus;
 
         [ProtoMember(7)]
         public MsgCollision msgCollision;

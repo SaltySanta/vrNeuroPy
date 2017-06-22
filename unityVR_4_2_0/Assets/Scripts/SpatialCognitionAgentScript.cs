@@ -1,100 +1,40 @@
-﻿using System;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
+using System.Linq;
 using SimpleNetwork;
-using UnityEngine;
 
-
-
-public class TestObjectAgentScript : AgentScript {
-
-	// Amount already rotated of current rotation
-	float totalRotation = 0;
-
-	// Current target rotation
-	float targetRotation;
-
-	// Current target position
-	Vector3 targetPosition;
-
-	// Is a search currently active
-	bool search = true;
-
-	// Controls execution of search
-	int searchStep = 0;
+/** @brief Overloaded control class for an agent performing several spatial cognition tasks
+ *
+ * @details
+ *
+ * - Derived from AgentScript
+ * - Implements the pathwalking message and the logic behind it
+ * - Intended to be used with the "SpatialCognition" scene
+ *
+ * - Created on: 2015
+ * - Author: Sascha Jüngel
+ * 
+ * \ingroup UnityVRClasses
+ */
+public class SpatialCognitionAgentScript : AgentScript
+{   		
+	/// <summary>
+	/// Go on with movement
+	/// </summary>
+	bool goOn = true;
 	
-
 	/// <summary>
 	/// Agent walks the path with smoother turn transitions
 	/// </summary>
 	bool smoothPath = true;
 	
+	bool agentIsPathwalking = false;
+
 	int gridResX, gridResZ;
 	
 	Vector3[] pathPoints;
-
-
-	/// <summary>
-	/// Go on with movement
-	/// </summary>
-	bool goOn = true;
-
-	/// <summary>
-	/// Set to true if the agent currently walks along a path
-	/// </summary>
-	public bool agentIsPathwalking = false;
-
-	/// <summary>
-	/// Asynchronous (false) or synchronous (true) mode
-	/// </summary>
-	protected bool syncMode = false;
-
-	/// <summary>
-	/// Agent is moved that much between calls of the Updatefunction - some kind of speed measurement
-	/// </summary>	
-	public float currentMovementSpeed = 0.0f;
-	
-	/// <summary>
-	/// Maximum speed of agent
-	/// </summary>
-	protected float movementSpeed = 1.0f;
-
-	/// <summary>
-	/// Handle to the script that handles collisions of the agent
-	/// </summary>
-	protected ControllerCollider controllerColliderScript;
-
-	/// <summary>
-	/// The simulation times unit in seconds. Precisely, the time between two send time points of the images. In synchronous mode, 
-	/// the sending is always executed in the first frame, therefore it is the simulated time of 2 frames. In asychron mode, we wait at least "SimulationTimePerFrame" seconds
-	/// to send an image, hence this is independent of the number of frames passed.
-	/// </summary>
-	protected float simulationTimePerFrame = 0.1f;
-
-	/// <summary>
-	/// Should the agent stop its movement?
-	/// </summary>
-	public bool movementCanceled = false;
-
-
-	/// <summary>
-	/// Progress of movement: if bigger or equal to GoalDistance, we arrived at the goal position
-	/// </summary>
-	// protected float DoneDistance = 0F;
-	/// <summary>
-	/// Set to true if the last movement is done
-	/// </summary>
-	protected bool isCurrentMovementFinished = true;
-
-
-	// If Lerpz collides with an object he turns around and contiues the search
-	void OnControllerColliderHit(ControllerColliderHit hit){
-		if (hit.gameObject.name != "Terrain") {
-						targetRotation = 180f;
-						searchStep = 1;
-				}
-	}
-
 
 	/// <summary>
 	/// Movement to a given position
@@ -102,18 +42,18 @@ public class TestObjectAgentScript : AgentScript {
 	/// <param name="msg">protobuf message</param>
 	protected override void ProcessMsgAgentMoveTo(MsgAgentMoveTo msg)
 	{	
-		GameObject lerpz = GameObject.Find("Lerpz");
-		TestObjectBehaviourScript scbs = GameObject.Find("MasterObject").GetComponent<TestObjectBehaviourScript>();
+		GameObject felice = GameObject.Find("felice_grasp");
+		SpatialCognitionBehaviourScript scbs = GameObject.Find("MasterObject").GetComponent<SpatialCognitionBehaviourScript>();
 		gridResX = scbs.gridPositions.GetLength(0);
 		gridResZ = scbs.gridPositions.GetLength(1);
 		
 		if (MySimpleNet != null) 
 		{
-			MySimpleNet.Send (new MsgActionExecutionStatus () {actionID = MovementIDExecuting, status = MsgActionExecutionStatus.InExecution});
+			MySimpleNet.Send (new SimpleNetwork.MsgActionExecutionStatus () {actionID = this.MovementIDExecuting, status = SimpleNetwork.MsgActionExecutionStatus.InExecution});
 		}
 		
 		// Start and target points of the agents movement
-		Vector3 start = lerpz.transform.position;
+		Vector3 start = felice.transform.position;
 		Vector3 target = new Vector3(msg.posX, msg.posY, msg.posZ);
 
 		List<int> path = scbs.computePath(start, target);
@@ -125,14 +65,33 @@ public class TestObjectAgentScript : AgentScript {
 		{
 			if (MySimpleNet != null) 
 			{
-				MySimpleNet.Send (new MsgActionExecutionStatus () {actionID = MovementIDExecuting, status = MsgActionExecutionStatus.Aborted});
+				MySimpleNet.Send (new MsgActionExecutionStatus () {actionID = this.MovementIDExecuting, status = MsgActionExecutionStatus.Aborted});
 			}
 		}	
 	}
+	
+	private Vector3 getBezierPoint(int r, int i, float t) 
+	{ 
+        if(r == 0) 
+		{
+			return pathPoints[i];
+		}
 
-
-
-		/// <summary>
+        return (((1 - t) * getBezierPoint(r - 1, i, t)) + (t * getBezierPoint(r - 1, i + 1, t)));
+    }
+	
+	float getPathLength(Vector3[] pathPoints, int numPoints)
+	{
+		float length = 0;
+		for (int i = 0; i < numPoints-1; i++)
+		{
+			length += (float)Math.Sqrt((double)((pathPoints[i].x - pathPoints[i+1].x)*(pathPoints[i].x - pathPoints[i+1].x))+
+								 			   ((pathPoints[i].z - pathPoints[i+1].z)*(pathPoints[i].z - pathPoints[i+1].z)));	
+		}
+		return length;
+	}
+	
+	/// <summary>
 	/// Coroutine that lets the agent walk along the given path.
 	/// Path is given as a list of grid numbers.
 	/// With smoothPath = true: The agent walks and turns at the same time while walking along a bezier curve
@@ -141,10 +100,10 @@ public class TestObjectAgentScript : AgentScript {
 	/// <param name="path">list of grid numbers</param>
 	IEnumerator walkPath(List<int> path, MsgAgentMoveTo msg)
 	{	
-		GameObject lerpz = GameObject.Find("Lerpz");
-		TestObjectBehaviourScript scbs = GameObject.Find("MasterObject").GetComponent<TestObjectBehaviourScript>();
+		GameObject felice = GameObject.Find("felice_grasp");
+		SpatialCognitionBehaviourScript scbs = GameObject.Find("MasterObject").GetComponent<SpatialCognitionBehaviourScript>();
 		pathPoints = new Vector3[path.Count];
-		pathPoints[0] = lerpz.transform.position;
+		pathPoints[0] = felice.transform.position;
 		
 		agentIsPathwalking = true;
 		
@@ -165,11 +124,11 @@ public class TestObjectAgentScript : AgentScript {
 		{	
 			if (MySimpleNet != null) 
 			{
-				MySimpleNet.Send (new MsgActionExecutionStatus () {actionID = MovementIDExecuting, status = MsgActionExecutionStatus.Rotating});
+				MySimpleNet.Send (new MsgActionExecutionStatus () {actionID = this.MovementIDExecuting, status = MsgActionExecutionStatus.Rotating});
 			}
 			
-			float startingAngle = Vector3.Angle(getBezierPoint(path.Count-1, 0, 0.0001f) - lerpz.transform.position, new Vector3(0f, 0f, 1f));
-			if (Vector3.Dot(getBezierPoint(path.Count-1, 0, 0.001f) - lerpz.transform.position, new Vector3(1f, 0f, 0f)) < 0)
+			float startingAngle = Vector3.Angle(getBezierPoint(path.Count-1, 0, 0.0001f) - felice.transform.position, new Vector3(0f, 0f, 1f));
+			if (Vector3.Dot(getBezierPoint(path.Count-1, 0, 0.001f) - felice.transform.position, new Vector3(1f, 0f, 0f)) < 0)
 			{
 				startingAngle = -startingAngle;
 			}
@@ -183,7 +142,7 @@ public class TestObjectAgentScript : AgentScript {
 
 			if (MySimpleNet != null) 
 			{
-				MySimpleNet.Send (new MsgActionExecutionStatus () {actionID = MovementIDExecuting, status = MsgActionExecutionStatus.WalkingRotating});
+				MySimpleNet.Send (new MsgActionExecutionStatus () {actionID = this.MovementIDExecuting, status = MsgActionExecutionStatus.WalkingRotating});
 			}
 			
 			float angle, dist;
@@ -195,7 +154,7 @@ public class TestObjectAgentScript : AgentScript {
 			{
 				yield return new WaitForSeconds(0.01f);
 				
-				if (syncMode)
+				if (SyncMode)
 				{
 					this.CurrentMovementSpeed = this.MovementSpeed * this.SimulationTimePerFrame;
 				}
@@ -204,21 +163,21 @@ public class TestObjectAgentScript : AgentScript {
 					this.CurrentMovementSpeed = this.MovementSpeed * Time.deltaTime;
 				}
 				
-				i = currentMovementSpeed / pathLength;  
+				i = this.CurrentMovementSpeed / pathLength;  
 				t += i;
 				if (t > 1f)
 				{
 					t = 1f;
 				}
 				
-				 Debug.DrawLine(lerpz.transform.position, getBezierPoint(path.Count-1, 0, t), Color.red, 100.0f); // Draws a red line of the path walked on the ground
+				 Debug.DrawLine(felice.transform.position, getBezierPoint(path.Count-1, 0, t), Color.red, 100.0f); // Draws a red line of the path walked on the ground
 						
 				angle = Vector3.Angle(new Vector3(0f,0f,1f), (getBezierPoint(path.Count-1, 0, t)-getBezierPoint(path.Count-1, 0, t-i)));
 				if (Vector3.Dot((getBezierPoint(path.Count-1, 0, t-i)-getBezierPoint(path.Count-1, 0, t)), new Vector3(1f,0f,0f)) > 0)
 				{
 					angle = 360f-angle;
 				}
-				lerpz.transform.eulerAngles = new Vector3(0f, angle ,0f);
+				felice.transform.eulerAngles = new Vector3(0f, angle ,0f);
 			
 				dist = (float)Math.Sqrt((double)((getBezierPoint(path.Count-1, 0, t).x - getBezierPoint(path.Count-1, 0, t-i).x)*(getBezierPoint(path.Count-1, 0, t).x - getBezierPoint(path.Count-1, 0, t-i).x))+
 								 					   ((getBezierPoint(path.Count-1, 0, t).z - getBezierPoint(path.Count-1, 0, t-i).z)*(getBezierPoint(path.Count-1, 0, t).z - getBezierPoint(path.Count-1, 0, t-i).z)));
@@ -230,12 +189,12 @@ public class TestObjectAgentScript : AgentScript {
 				{
 					if (MySimpleNet != null) 
 					{		
-						MySimpleNet.Send (new MsgCollision () {actionID = this.MovementIDExecuting, colliderID = controllerColliderScript.HitID});
-						MySimpleNet.Send (new MsgActionExecutionStatus () {actionID = MovementIDExecuting, status = MsgActionExecutionStatus.Aborted});
+						MySimpleNet.Send (new MsgCollision () {actionID = this.MovementIDExecuting, colliderID = ControllerColliderScript.HitID});
+						MySimpleNet.Send (new MsgActionExecutionStatus () {actionID = this.MovementIDExecuting, status = MsgActionExecutionStatus.Aborted});
 					}
 					
-					this.currentMovementSpeed = 0F; 
-					this.isCurrentMovementFinished = true;
+					this.CurrentMovementSpeed = 0F; 
+					this.IsCurrentMovementFinished = true;
 					movementCanceled = true;
 				} 
 				
@@ -293,15 +252,15 @@ public class TestObjectAgentScript : AgentScript {
 		if (!movementCanceled) 
 		{
 			// Set agent to exact desired position
-			lerpz.transform.position = pathPoints[path.Count -1];
+			felice.transform.position = pathPoints[path.Count -1];
 			
 			if (MySimpleNet != null) 
 			{
-				MySimpleNet.Send (new MsgActionExecutionStatus () {actionID = MovementIDExecuting, status = MsgActionExecutionStatus.Finished});
+				MySimpleNet.Send (new MsgActionExecutionStatus () {actionID = this.MovementIDExecuting, status = MsgActionExecutionStatus.Finished});
 			}
 		}
 	
-		currentMovementSpeed = 0;
+		this.CurrentMovementSpeed = 0;
 		agentIsPathwalking = false;
 	}
 	
@@ -313,30 +272,30 @@ public class TestObjectAgentScript : AgentScript {
 	/// <returns></returns>
 	IEnumerator MovePart(float angle, float distance)
 	{
-		GameObject lerpz = GameObject.Find("Lerpz");
+		GameObject felice = GameObject.Find("felice_grasp");
 		float degree = 0;
-		float lerpzAngle = (lerpz.transform.eulerAngles.y)%360;
-		if (Math.Abs(angle - lerpzAngle) < 180)
+		float feliceAngle = (felice.transform.eulerAngles.y)%360;
+		if (Math.Abs(angle - feliceAngle) < 180)
 		{
-			degree = angle - lerpzAngle;
+			degree = angle - feliceAngle;
 		}
 		else
 		{
-			if (angle > lerpzAngle)
+			if (angle > feliceAngle)
 			{
-				degree = (angle - lerpzAngle) - 360;
+				degree = (angle - feliceAngle) - 360;
 			}
 			else
 			{
-				degree = (angle - lerpzAngle) + 360;
+				degree = (angle - feliceAngle) + 360;
 			}
 		}
 		
-		isCurrentMovementFinished = false;
+		this.IsCurrentMovementFinished = false;
 		
 		if (MySimpleNet != null) 
 		{
-			MySimpleNet.Send (new MsgActionExecutionStatus () {actionID = MovementIDExecuting, status = MsgActionExecutionStatus.Rotating});
+			MySimpleNet.Send (new MsgActionExecutionStatus () {actionID = this.MovementIDExecuting, status = MsgActionExecutionStatus.Rotating});
 		}
 		
 // Rotation part
@@ -390,47 +349,22 @@ public class TestObjectAgentScript : AgentScript {
 		// Set the rotation angles to desired value
 		t.eulerAngles = startRot + new Vector3(0.0f, (degree), 0.0f);
 		
-		isCurrentMovementFinished = true;
+		this.IsCurrentMovementFinished = true;
 		
 // End of rotation part
 		
-  		while (!isCurrentMovementFinished)
+  		while (!this.IsCurrentMovementFinished)
 		{
   			 yield return null;
 		}
 		
-		isCurrentMovementFinished = false;
+		this.IsCurrentMovementFinished = false;
 		StartNewMovement(distance, angle);
-		while (!isCurrentMovementFinished)
+		while (!this.IsCurrentMovementFinished)
 		{
   			 yield return null;
 		}
 
 		goOn = true;
-	}
-
-
-	private Vector3 getBezierPoint(int r, int i, float t) 
-	{ 
-        if(r == 0) 
-		{
-			return pathPoints[i];
-		}
-
-        return (((1 - t) * getBezierPoint(r - 1, i, t)) + (t * getBezierPoint(r - 1, i + 1, t)));
-    }
-
-
-	float getPathLength(Vector3[] pathPoints, int numPoints)
-	{
-		float length = 0;
-		for (int i = 0; i < numPoints-1; i++)
-		{
-			length += (float)Math.Sqrt((double)((pathPoints[i].x - pathPoints[i+1].x)*(pathPoints[i].x - pathPoints[i+1].x))+
-								 			   ((pathPoints[i].z - pathPoints[i+1].z)*(pathPoints[i].z - pathPoints[i+1].z)));	
-		}
-		return length;
-	}
-	
+	}	
 }
-	

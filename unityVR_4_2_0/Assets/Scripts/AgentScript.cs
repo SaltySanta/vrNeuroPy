@@ -286,7 +286,12 @@ public partial class AgentScript : MonoBehaviour
 	/// Maximum speed of agent
 	/// </summary>
 	protected float MovementSpeed = 1.0f;	
-	
+
+	/// <summary>
+	/// Should the agent stop its movement?
+	/// </summary>
+	public bool movementCanceled = false;
+
 	/// <summary>
 	/// Timout in seconds
 	/// </summary>
@@ -421,7 +426,7 @@ public partial class AgentScript : MonoBehaviour
 			if( graspAnimationsPlaying.Length > 0 )
 			{
 				if (MySimpleNet != null) {
-					MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = ArmIDExecuting, status = MsgActionExecutationStatus.InExecution });
+					MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = ArmIDExecuting, status = MsgActionExecutionStatus.InExecution });
 					
 				}
 				
@@ -435,7 +440,7 @@ public partial class AgentScript : MonoBehaviour
 					Destroy(debugLine);
 				
 				if (MySimpleNet != null) {
-					MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = ArmIDExecuting, status = MsgActionExecutationStatus.Finished });
+					MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = ArmIDExecuting, status = MsgActionExecutionStatus.Finished });
 				
 				}
 				
@@ -542,7 +547,7 @@ public partial class AgentScript : MonoBehaviour
 		if (this.IsCurrentMovementFinished == false) {
 			IsCurrentMovementFinished = true;
 			// We aborted a running movement, signle that
-			MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = MovementIDExecuting, status = MsgActionExecutationStatus.Aborted });
+			MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = MovementIDExecuting, status = MsgActionExecutionStatus.Aborted });
 		}
 		
 		// Reset the position of the agent object
@@ -761,7 +766,7 @@ public partial class AgentScript : MonoBehaviour
 		
 		if (this.IsCurrentMovementFinished == false) {
 			// e aborted a running movement, send a signal			
-			MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = MovementIDExecuting, status = MsgActionExecutationStatus.Aborted });
+			MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = MovementIDExecuting, status = MsgActionExecutionStatus.Aborted });
 			 
 		}
 		
@@ -784,7 +789,7 @@ public partial class AgentScript : MonoBehaviour
 	{
 		if (this.IsCurrentMovementFinished == false) {
 			// We aborted a running movement, send a signal			
-			MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = MovementIDExecuting, status = MsgActionExecutationStatus.Aborted });
+			MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = MovementIDExecuting, status = MsgActionExecutionStatus.Aborted });
 		}
 	
 	
@@ -871,7 +876,7 @@ public partial class AgentScript : MonoBehaviour
 	{
 		if (MySimpleNet != null) 
 		{
-			MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = EyeIDExecuting, status = MsgActionExecutationStatus.InExecution });
+			MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = EyeIDExecuting, status = MsgActionExecutionStatus.InExecution });
 		}
 		LookAtPoint(new Vector3 (msg.targetX, msg.targetY, msg.targetZ));
 	}
@@ -1051,7 +1056,7 @@ public partial class AgentScript : MonoBehaviour
 					Destroy(debugLine);
 				
 				if (MySimpleNet != null) {
-					MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = ArmIDExecuting, status = MsgActionExecutationStatus.Aborted });					
+					MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = ArmIDExecuting, status = MsgActionExecutionStatus.Aborted });					
 				}
 				IsArmAnimationExecuted = false;
 			}
@@ -1071,7 +1076,7 @@ public partial class AgentScript : MonoBehaviour
 			if (rightGraspedObject != null) 
 			{
 				if (MySimpleNet != null) {
-					MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = NextMsg.msgAgentGraspPos.actionID, status = MsgActionExecutationStatus.Aborted });				
+					MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = NextMsg.msgAgentGraspPos.actionID, status = MsgActionExecutionStatus.Aborted });				
 				}
 			}
 			else
@@ -1088,7 +1093,7 @@ public partial class AgentScript : MonoBehaviour
 			if (rightGraspedObject != null) 
 			{
 				if (MySimpleNet != null) {
-					MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = NextMsg.msgAgentGraspID.actionID, status = MsgActionExecutationStatus.Aborted });				
+					MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = NextMsg.msgAgentGraspID.actionID, status = MsgActionExecutionStatus.Aborted });				
 				}
 			}
 			else
@@ -1264,7 +1269,7 @@ public partial class AgentScript : MonoBehaviour
 				
 				if (MySimpleNet != null) {		
 					MySimpleNet.Send (new MsgCollision () { actionID = this.MovementIDExecuting, colliderID = ControllerColliderScript.HitID });
-					MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = MovementIDExecuting, status = MsgActionExecutationStatus.Finished });
+					MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = MovementIDExecuting, status = MsgActionExecutionStatus.Finished });
 				}
 				
 				this.CurrentMovementSpeed = 0F; // Stop the moving
@@ -1272,7 +1277,7 @@ public partial class AgentScript : MonoBehaviour
 			} else {
 				// No collisions => send an acknowledge message to the agent that the movement is still under execution
 				if (MySimpleNet != null) {
-					MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = MovementIDExecuting, status = MsgActionExecutationStatus.Walking });
+					MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = MovementIDExecuting, status = MsgActionExecutionStatus.Walking });
 				}
 			}
 	
@@ -1280,7 +1285,7 @@ public partial class AgentScript : MonoBehaviour
 			// Movement is finished => send an acknowledge message to the agent
 			this.CurrentMovementSpeed = 0.0F;
 			if (MySimpleNet != null) {
-				MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = MovementIDExecuting, status = MsgActionExecutationStatus.Finished });
+				MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = MovementIDExecuting, status = MsgActionExecutionStatus.Finished });
 			}
 			IsCurrentMovementFinished = true;
             if (gameObject.animation["idle"] != null)
@@ -1418,7 +1423,7 @@ public partial class AgentScript : MonoBehaviour
 			saccTimeDone = 0f;
 			if (MySimpleNet != null) 
 			{
-				MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = EyeIDExecuting, status = MsgActionExecutationStatus.Finished });
+				MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = EyeIDExecuting, status = MsgActionExecutionStatus.Finished });
 			}
 			Debug.Log("Saccade done.");
 		}
@@ -1441,7 +1446,7 @@ public partial class AgentScript : MonoBehaviour
 		{ 
 			if (MySimpleNet != null) 
 			{
-				MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = EyeIDExecuting, status = MsgActionExecutationStatus.InExecution });
+				MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = EyeIDExecuting, status = MsgActionExecutionStatus.InExecution });
 			}
 			eyeMovement(3);
 		}
@@ -1635,7 +1640,7 @@ public partial class AgentScript : MonoBehaviour
 						Debug.Log("LookAtTarget outside the accepted angle (+- 130)");
 						if (MySimpleNet != null) 
 						{
-							MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = EyeIDExecuting, status = MsgActionExecutationStatus.Aborted });
+							MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = EyeIDExecuting, status = MsgActionExecutionStatus.Aborted });
 						}
 					}
 				} else if (!saccadeActive)
@@ -1767,7 +1772,7 @@ public partial class AgentScript : MonoBehaviour
 		{
 			Debug.Log("Object with ID "+objectID+" at position ("+P.transform.position+") is not in range of the arm, hence it is not graspable");
 			if (MySimpleNet != null) {
-				MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = ArmIDExecuting, status = MsgActionExecutationStatus.Aborted });
+				MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = ArmIDExecuting, status = MsgActionExecutionStatus.Aborted });
 			}
 		}
     }
@@ -1794,7 +1799,7 @@ public partial class AgentScript : MonoBehaviour
 			{
 				Debug.Log("Object at "+graspPoint+" for target position ("+x1+","+y1+") is not in range of the arm, hence it is not graspable");
 				if (MySimpleNet != null) {
-					MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = ArmIDExecuting, status = MsgActionExecutationStatus.Aborted });
+					MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = ArmIDExecuting, status = MsgActionExecutionStatus.Aborted });
 				}
 			}
 			// InitializeGraspActionExecutionMessageSending();
@@ -1802,7 +1807,7 @@ public partial class AgentScript : MonoBehaviour
 		else
 		{			
 			if (MySimpleNet != null) {
-				MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = ArmIDExecuting, status = MsgActionExecutationStatus.Aborted });
+				MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = ArmIDExecuting, status = MsgActionExecutionStatus.Aborted });
 			}
 		}
     }
@@ -1814,7 +1819,7 @@ public partial class AgentScript : MonoBehaviour
 	{
 		if (MySimpleNet != null) 
 		{
-			MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = ArmIDExecuting, status = MsgActionExecutationStatus.InExecution });
+			MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = ArmIDExecuting, status = MsgActionExecutionStatus.InExecution });
 		}
 		
 		if(rightGraspedObject != null)
@@ -1841,14 +1846,14 @@ public partial class AgentScript : MonoBehaviour
 			
 			// Send success to agent
 			if (MySimpleNet != null) {
-				MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = msg.actionID, status = MsgActionExecutationStatus.Finished });
+				MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = msg.actionID, status = MsgActionExecutionStatus.Finished });
 			}
 		}
 		else
 		{
 			//Send failure to agent
 			if (MySimpleNet != null) {
-				MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = msg.actionID, status = MsgActionExecutationStatus.Aborted });
+				MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = msg.actionID, status = MsgActionExecutionStatus.Aborted });
 				}
 		}			
 	}
@@ -1861,7 +1866,7 @@ public partial class AgentScript : MonoBehaviour
 		IsCurrentMovementFinished = false;
 		if (MySimpleNet != null) 
 		{
-			MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = msg.actionID, status = MsgActionExecutationStatus.Rotating });
+			MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = msg.actionID, status = MsgActionExecutionStatus.Rotating });
 		}
 		
 		StartCoroutine(DoRotation(msg.degree, msg));
@@ -1951,7 +1956,7 @@ public partial class AgentScript : MonoBehaviour
 		
 		if (msg != null && MySimpleNet != null)
 		{
-			MySimpleNet.Send (new MsgActionExecutationStatus () { actionID = msg.actionID, status = MsgActionExecutationStatus.Finished });
+			MySimpleNet.Send (new MsgActionExecutionStatus () { actionID = msg.actionID, status = MsgActionExecutionStatus.Finished });
 		}			
 	}
 	

@@ -10,7 +10,7 @@ namespace SimpleNetwork
     /// Delivers the execution status of the last action (VR to Agent).
     /// </summary>
     [Serializable, ProtoContract]
-    public class MsgActionExecutationStatus
+    public class MsgActionExecutionStatus
     {
 
         /// <summary>

@@ -91,7 +91,7 @@ public class FiveObjectsAtTableAgent : AgentScript
         //instead it waits 4 seconds
         //yield return WhilePlaying( animationName );
         Debug.Log(String.Format("ID: {0}", MovementIDExecuting));
-        MySimpleNet.Send(new MsgActionExecutationStatus() { actionID = GrapIDExecuting, status = MsgActionExecutationStatus.Finished });
+        MySimpleNet.Send(new MsgActionExecutionStatus() { actionID = GrapIDExecuting, status = MsgActionExecutionStatus.Finished });
     }
 
     private IEnumerator WhilePlaying( string animationName )

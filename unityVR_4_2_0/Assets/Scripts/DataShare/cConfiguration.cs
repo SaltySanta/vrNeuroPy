@@ -25,6 +25,11 @@ public class cConfiguration
         get; private set; 
     }
   
+    public int IPAddressEntry
+    {
+        get; private set;
+    }
+
     /// <summary>
     /// access the IP
     /// </summary>
@@ -105,6 +110,7 @@ public class cConfiguration
 		this.CameraDisplayWidth = Buffer.CameraDisplayWidth;
 		this.FovHorizontal = Buffer.FovHorizontal;
 		this.FovVertical = Buffer.FovVertical;
+		this.IPAddressEntry = Buffer.IPAddressEntry;
     }
 
     /// <summary>
@@ -123,7 +129,7 @@ public class cConfiguration
 		this.CameraDisplayWidth = 256;
 		this.FovHorizontal = 120;
 		this.FovVertical = 90;
-		
+		this.IPAddressEntry = 1;
 		//WriteObjectToXmlFile("appconfigNew.config_", typeof(cConfiguration), this, false, true); // <- write out a sample file
 
     }

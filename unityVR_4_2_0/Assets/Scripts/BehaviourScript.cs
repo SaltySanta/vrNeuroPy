@@ -329,17 +329,8 @@ public partial class BehaviourScript : MonoBehaviour
     	{
         	return null;
     	}
-
-    	IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
-
-  
-  		foreach(IPAddress i in host.AddressList)
-		{
-			if(i.AddressFamily == AddressFamily.InterNetwork)
-				return i.ToString();
-		}
-			
-		return null;
+        IPAddress i = Dns.GetHostAddresses(Dns.GetHostName())[config.IPAddressEntry];
+        return i.ToString();
 	}
 	
 
