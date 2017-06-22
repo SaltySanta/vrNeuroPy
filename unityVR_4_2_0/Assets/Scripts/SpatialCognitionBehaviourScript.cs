@@ -424,26 +424,26 @@ public class SpatialCognitionBehaviourScript : BehaviourScript
 			objectPositionsWriter.Write("carCrane  ");	
 			objectPositionsWriter.Write(getGridCoordinates(GameObject.Find("carCrane").transform.position,false) + "  ");
 			objectPositionsWriter.WriteLine(GameObject.Find("carCrane").transform.position);
-		objectPositionsWriter.Write(4 + "  ");
-			objectPositionsWriter.Write("jellyRed  ");	
-			objectPositionsWriter.Write(getGridCoordinates(GameObject.Find("jellyRed").transform.position,false) + "  ");
-			objectPositionsWriter.WriteLine(GameObject.Find("jellyRed").transform.position);
+		//objectPositionsWriter.Write(4 + "  ");
+		//	objectPositionsWriter.Write("jellyRed  ");	
+		//	objectPositionsWriter.Write(getGridCoordinates(GameObject.Find("jellyRed").transform.position,false) + "  ");
+		//	objectPositionsWriter.WriteLine(GameObject.Find("jellyRed").transform.position);
 		objectPositionsWriter.Write(5 + "  ");
 			objectPositionsWriter.Write("penBlue  ");
-			objectPositionsWriter.Write(getGridCoordinates(GameObject.Find("penBlue").transform.position,false) + "  ");
-			objectPositionsWriter.WriteLine(GameObject.Find("penBlue").transform.position);
+			objectPositionsWriter.Write(getGridCoordinates(GameObject.Find("pencil_blue").transform.position,false) + "  ");
+			objectPositionsWriter.WriteLine(GameObject.Find("pencil_blue").transform.position);
 		objectPositionsWriter.Write(6 + "  ");
 			objectPositionsWriter.Write("penGreen  ");
-			objectPositionsWriter.Write(getGridCoordinates(GameObject.Find("penGreen").transform.position,false) + "  ");
-			objectPositionsWriter.WriteLine(GameObject.Find("penGreen").transform.position);
-		objectPositionsWriter.Write(7 + "  ");
-			objectPositionsWriter.Write("penBlack  ");
-			objectPositionsWriter.Write(getGridCoordinates(GameObject.Find("penBlack").transform.position,false) + "  ");
-			objectPositionsWriter.WriteLine(GameObject.Find("penBlack").transform.position);
+			objectPositionsWriter.Write(getGridCoordinates(GameObject.Find("pencil_green").transform.position,false) + "  ");
+			objectPositionsWriter.WriteLine(GameObject.Find("pencil_green").transform.position);
+		//objectPositionsWriter.Write(7 + "  ");
+		//	objectPositionsWriter.Write("penBlack  ");
+		//	objectPositionsWriter.Write(getGridCoordinates(GameObject.Find("pencil_black").transform.position,false) + "  ");
+		//	objectPositionsWriter.WriteLine(GameObject.Find("pencil_black").transform.position);
 		objectPositionsWriter.Write(8 + "  ");
 			objectPositionsWriter.Write("penRed  ");
-			objectPositionsWriter.Write(getGridCoordinates(GameObject.Find("penRed").transform.position,false) + "  ");
-			objectPositionsWriter.WriteLine(GameObject.Find("penRed").transform.position);
+			objectPositionsWriter.Write(getGridCoordinates(GameObject.Find("pencil_red").transform.position,false) + "  ");
+			objectPositionsWriter.WriteLine(GameObject.Find("pencil_red").transform.position);
 		objectPositionsWriter.Close();	
 	}
 	
@@ -763,7 +763,7 @@ public class SpatialCognitionBehaviourScript : BehaviourScript
 			agentScripts[0].DefaultRotation = 0;
 			GameObject.Find("MainCamera").transform.position = new Vector3(-0.92f,4.09f,8.23f); 
 			GameObject.Find("MainCamera").transform.eulerAngles = new Vector3(52.0f,114.03f,358.5f); 
-			GameObject.Find("penRed").transform.position = new Vector3(0.241f,1.89f,8.48f); 
+			//GameObject.Find("pencil_red").transform.position = new Vector3(0.241f,1.89f,8.48f); 
 			break;
 		default:
 			agentScripts[0].DefaultAgentPosition = new Vector3(0f,0f,10f);
