@@ -6,6 +6,7 @@ from MsgObject_pb2 import *
 
 import sys
 import time
+import signal
 
 # function to wait until an action is COMPLETELY executed in the VR (only for actions which have an action execution state)
 def waitForFullExec(annarInterface, id, timeout = -1):
@@ -151,8 +152,19 @@ class Annar4Interface(object):
         self.annarProtoMain = AnnarProtoMain(srv_addr, remotePortNo, agentNo, agentOnly, softwareInterfaceTimeout)
 
 
+
+    # if Ctrl-C is called, threads are closed properly to avoid having to close the terminal every time something goes wrong
+    def abort_signal(self, signal, frame):
+        print "\nMANUAL TERMINATION: Stopping all threads..."
+        self.stop(True)
+        print "DONE!"
+        sys.exit(0)
+
     # start the 'annarProtoMain' instance and compare version strings with the server (if versions are different, program exits)
     def start(self):
+        
+        # start the Ctrl-C signal handler
+        signal.signal(signal.SIGINT, self.abort_signal)
 
         self.annarProtoMain.start()
 
