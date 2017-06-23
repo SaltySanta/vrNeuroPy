@@ -157,7 +157,6 @@ class Annar4Interface(object):
     def abort_signal(self, signal, frame):
         print "\nMANUAL TERMINATION: Stopping all threads..."
         self.stop(True)
-        print "DONE!"
         sys.exit(0)
 
     # start the 'annarProtoMain' instance and compare version strings with the server (if versions are different, program exits)
