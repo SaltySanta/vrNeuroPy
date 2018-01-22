@@ -366,6 +366,8 @@ class Annar4Interface(object):
         print "SEND & WAIT: EyeFixation"
         waitForFullExec(self, self.annarProtoMain.getSender().sendEyeFixation(targetX, targetY, targetZ))
 
+    # waiting time, because EnvironmentReset does NOT return an execution status. if you experience
+    # the reset not being finished in time, increase msgWaitingTime
     def sendEnvironmentReset(self, type=0):
 
         print "SEND: EnvironmentReset"
@@ -373,6 +375,8 @@ class Annar4Interface(object):
         time.sleep(self.msgWaitingTime)
         return res
 
+    # waiting time, because TrialReset does NOT return an execution status. if you experience
+    # the reset not being finished in time, increase msgWaitingTime
     def sendTrialReset(self, type=0):
 
         print "SEND: TrialReset"
