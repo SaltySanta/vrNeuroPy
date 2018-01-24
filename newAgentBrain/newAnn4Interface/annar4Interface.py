@@ -194,31 +194,40 @@ class Annar4Interface(object):
         print "DONE."
         print "/////////////////////////////////////"
 
-    # retrieve images and return bool for successs
+
+    ############################################################################################
+    ### RECEIVING FUNCTIONS
+    ###
+    ### The receiving functions have 2 steps:
+    ### 1) check the data, which loads new data from the receiving buffer, returning a True is successfully retrieved
+    ### 2) get the data, which actually returns the wanted data
+    ############################################################################################
+
+    # retrieve images and return bool for successs (needs to be executed if you want to load new images)
     def checkImages(self):
 
         self.leftImage, self.rightImage, res = self.annarProtoMain.getReceiver().getImageData()
 
         return res
 
-    # return left image
+    # return left image retrieved by checkImages()
     def getImageLeft(self):
 
         return self.leftImage
 
-    # return right image
+    # return right image retrieved by checkImages()
     def getImageRight(self):
 
         return self.rightImage
 
-    # retrieve grid sensor data and return bool for success
+    # retrieve grid sensor data and return bool for success (needs to be executed if you want to get new grid sensor data)
     def checkGridSensorData(self):
 
 
         self.gridSensorDataX, self.gridSensorDataY, self.gridSensorDataZ, self.gridSensorDataRotationX, self.gridSensorDataRotationY, self.gridSensorDataRotationZ, res = self.annarProtoMain.getReceiver().getGridSensorData()
         return res
 
-    # return the previously retrieved grid sensor data
+    # return the grid sensor data previously retrieved by checkGridSensorData()
     def getGridSensorData(self):
 
         gridData = []
@@ -232,7 +241,7 @@ class Annar4Interface(object):
 
         return gridData
 
-    # retrieve head motion data and return bool for success
+    # retrieve head motion data and return bool for success (needs to be executed if you want to get new head motion data)
     def checkHeadMotion(self):
 
         self.headMotionVelocityX, self.headMotionVelocityY, self.headMotionVelocityZ, self.headMotionAccelerationX, self.headMotionAccelerationY, self.headMotionAccelerationZ, self.headMotionRotationVelocityX, self.headMotionRotationVelocityY, self.headMotionRotationVelocityZ, self.headMotionRotationAccelerationX, self.headMotionRotationAccelerationY, self.headMotionRotationAccelerationZ, res = self.annarProtoMain.getReceiver().getHeadMotion()
@@ -240,7 +249,7 @@ class Annar4Interface(object):
         return res
 
 
-    # return the previously retrieved head motion data
+    # return the head motion data previously retrieved by checkHeadMotion()
     def getHeadMotion(self):
 
         headMotion = []
@@ -260,14 +269,14 @@ class Annar4Interface(object):
 
         return headMotion
 
-    # retrieve eye position data and return bool for success
+    # retrieve eye position data and return bool for success (needs to be executed if you want to get new eye position data)
     def checkEyePosition(self):
 
         self.eyeRotationPositionX, self.eyeRotationPositionY, self.eyeRotationPositionZ, self.eyeRotationVelocityX, self.eyeRotationVelocityY, self.eyeRotationVelocityZ, res = self.annarProtoMain.getReceiver().getEyePosition()
 
         return res
 
-    # return the previously retrieved eye position data
+    # return the eye position data previously retrieved by checkEyePosition
     def getEyePosition(self):
 
         eyePosition = []
@@ -281,38 +290,48 @@ class Annar4Interface(object):
     
         return eyePosition
 
-    # retrieve external reward and return bool for success
+    # retrieve external reward and return bool for success (needs to be executed if you want to get new external reward data)
     def checkExternalReward(self):
 
         self.externalReward, res = self.annarProtoMain.getReceiver().getExternalReward()
 
         return res
 
-    # return external reward
+    # return external reward previously retrieved by checkExternalReward()
     def getExternalReward(self):
 
         return self.externalReward
 
-    # retrieve action execution state and return bool for success
+    # retrieve action execution state and return bool for success (needs to be executed if you want to get new action execution state data)
     def checkActionExecState(self, actionID):
 
         self.state, res = self.annarProtoMain.getReceiver().getActionExecState(actionID)
         
         return res
 
-    # return action execution state
+    # return action execution state previously retrieved by checkActionExecState()
+    #
+    # Action Execution Status Meaning:
+    #
+    # 0 = InExecution
+    # 1 = Finished
+    # 2 = Aborted
+    # 3 = Walking
+    # 4 = Rotating
+    # 5 = WalkingRotating
+    #
     def getActionExecState(self):
 
         return self.state
 
-    # retrieve collision data and return bool for success
+    # retrieve collision data and return bool for success (needs to be executed if you want to get new collision data)
     def checkCollision(self):
 
         self.actionColID, self.colliderID, res = self.annarProtoMain.getReceiver().getCollision()
 
         return res
 
-    # return collision data
+    # return collision data previously retrieved by checkCollision()
     def getCollision(self):
 
         data = []
@@ -322,19 +341,19 @@ class Annar4Interface(object):
 
         return data
 
-    # retrieve menu item data and return bool for success
+    # retrieve menu item data and return bool for success (needs to be executed if you want to get new menu item data)
     def checkMenuItem(self):
 
         self.eventID, self.parameter, res = self.annarProtoMain.getReceiver().getMenuItem()
 
         return res
 
-    # return menu item event id
+    # return menu item event id previously retrieved by checkMenuItem()
     def getMenuItemID(self):
 
         return self.eventID
 
-    # return menu item parameter
+    # return menu item parameter previously retrieved by checkMenuItem()
     def getMenuItemParameter(self):
 
         return self.parameter
@@ -348,24 +367,30 @@ class Annar4Interface(object):
     ############################################################################################
     ### SENDING FUNCTIONS
     ###
-    ### (functions, which include an action execution status are executed with 'waitForExec')
+    ### Functions with HAVE an Action Execution State, are executed with the waitForFullExec() function.
+    ### If you don't want to wait for the full execution, you can look at the waitForExec() function at the top of the file.
     ############################################################################################
 
+    # send the agent to walk a certain distance in a certain direction (degrees)
     def sendAgentMovement(self, degree, distance):
 
         print "SEND & WAIT: AgentMovement"
         waitForFullExec(self, self.annarProtoMain.getSender().sendAgentMovement(degree, distance))
 
+    # the eyes (cameras) of the agent can be moved individually in vertical directions, but only together horizontally
     def sendEyeMovement(self, panLeft, panRight, tilt):
 
         print "SEND & WAIT: EyeMovement"
         waitForFullExec(self, self.annarProtoMain.getSender().sendEyeMovement(panLeft, panRight, tilt))
 
+    # the agent fixates the eyes on a given point in the 3-dimensional space
     def sendEyeFixation(self, targetX, targetY, targetZ):
 
         print "SEND & WAIT: EyeFixation"
         waitForFullExec(self, self.annarProtoMain.getSender().sendEyeFixation(targetX, targetY, targetZ))
 
+    # resets the environment (exact function needs to be specified in your own Unity BehaviourScript)
+    #
     # waiting time, because EnvironmentReset does NOT return an execution status. if you experience
     # the reset not being finished in time, increase msgWaitingTime
     def sendEnvironmentReset(self, type=0):
@@ -375,6 +400,8 @@ class Annar4Interface(object):
         time.sleep(self.msgWaitingTime)
         return res
 
+    # resets the trial (exact function needs to be specified in your own Unity BehaviourScript)
+    #
     # waiting time, because TrialReset does NOT return an execution status. if you experience
     # the reset not being finished in time, increase msgWaitingTime
     def sendTrialReset(self, type=0):
@@ -384,36 +411,43 @@ class Annar4Interface(object):
         time.sleep(self.msgWaitingTime)
         return res
 
+    # the agents grasps for a certain object (the objectID needs to be assigned to an existing object in the BehaviourScript)
     def sendGraspID(self, objectID):
 
         print "SEND & WAIT: GraspID"
         waitForFullExec(self, self.annarProtoMain.getSender().sendGraspID(objectID))
 
+    # the agent grasps for whatever is located in the position in its current view, given by a 2-dimentional point
     def sendGraspPos(self, targetX, targetY):
 
         print "SEND & WAIT: GraspPos"
         waitForFullExec(self, self.annarProtoMain.getSender().sendGraspPos(targetX, targetY))
 
+    # ...
     def sendPointPos(self, targetX, targetY):
 
         print "SEND & WAIT: PointPos"
         waitForFullExec(self, self.annarProtoMain.getSender().sendPointPos(targetX, targetY))
 
+    # ...
     def sendPointID(self, objectID):
 
         print "SEND & WAIT: PointID"
         waitForFullExec(self, self.annarProtoMain.getSender().sendPointID(objectID))
 
+    # ...
     def sendInteractionID(self, objectID):
 
         print "SEND & WAIT: InteractionID"
         waitForFullExec(self, self.annarProtoMain.getSender().sendInteractionID(objectID))
 
+    # ...
     def sendInteractionPos(self, targetX, targetY):
 
         print "SEND & WAIT: InteractionPos"
         waitForFullExec(self, self.annarProtoMain.getSender().sendInteractionPos(targetX, targetY))
 
+    # ...
     def sendStopSync(self):
 
         print "SEND: StopSync"
@@ -421,21 +455,25 @@ class Annar4Interface(object):
         time.sleep(self.msgWaitingTime)
         return res
 
+    # the agent lets go of whatever object it holds in its hand
     def sendGraspRelease(self):
 
         print "SEND & WAIT: GraspRelease"
         waitForFullExec(self, self.annarProtoMain.getSender().sendGraspRelease())
 
+    # the agent turns in the given direction (degrees)
     def sendAgentTurn(self, degree):
 
         print "SEND & WAIT: AgentTurn"
         waitForFullExec(self, self.annarProtoMain.getSender().sendAgentTurn(degree))
 
+    # the agent moves towards a given point in the 3-dimensional space (currently not working)
     def sendAgentMoveTo(self, x, y, z, targetMode=0):
 
         print "SEND & WAIT: AgentMoveTo"
         waitForFullExec(self, self.annarProtoMain.getSender().sendAgentMoveTo(x, y, z, targetMode))
 
+    # the agent interrupts whatever movement it's currently executing (only possible WITHOUT the use of the waitForFullExec() function)
     def sendAgentCancelMovement(self):
 
         print "SEND: AgentCancelMovement"
@@ -443,6 +481,7 @@ class Annar4Interface(object):
         time.sleep(self.msgWaitingTime)
         return res
 
+    # checks the version of the Unity server (this is called automatically when initializing the interface object)
     def sendVersionCheck(self):
 
         res = self.annarProtoMain.getSender().sendVersionCheck()
