@@ -1,12 +1,18 @@
 from annar4Interface import *
-from annarProtoMain import *
 from annarProtoRecv import *
 from annarProtoSend import *
 from MsgObject_pb2 import *
 
-import sys
-import time
+
 import signal
+import socket
+import struct
+import os
+import threading
+import time
+import sys
+
+MONITOR_INTERVAL = 1000
 
 # function to wait until an action is COMPLETELY executed in the VR (only for actions which have an action execution state)
 def waitForFullExec(annarInterface, id, timeout = -1):
@@ -92,11 +98,26 @@ def waitForExec(annarInterface, id, timeout = -1):
 
         return actionState
 
+# loop function executed by a thread, which terminates object if a given timeout is exceeded
+def timeout_loop(self):
+
+    while not done:
+
+        if (softwareInterfaceTimeout != -1) and (interfaceNotUsed > softwareInterfaceTimeout):
+
+            stop(False)
+
+        
+
+        time.sleep(MONITOR_INTERVAL/1000000.0)
+
+        self.interfaceNotUsed = self.interfaceNotUsed + 1
+
 
 class Annar4Interface(object):
 
     # initialize all needed variables belonging to the object
-    def __init__(self, srv_addr, remotePortNo, agentNo, agentOnly, softwareInterfaceTimeout):
+    def __init__(self, srv_addr, remotePortNo, agentNo, agentOnly, softwareInterfaceTimeout=-1):
 
         ######################################
         ##### VERSION OF THE WHOLE INTERFACE
@@ -149,9 +170,51 @@ class Annar4Interface(object):
         self.eventID = None
         self.parameter = None
 
-        self.annarProtoMain = AnnarProtoMain(srv_addr, remotePortNo, agentNo, agentOnly, softwareInterfaceTimeout)
+
+        # CREATE SOCKETS
+        if (not agentOnly):
+       
+        # create socket for VR
+            try:
+
+                self.socketVR = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                #timeval = struct.pack('ll', 1, 0)
+                #self.socketVR.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, timeval)
+                self.socketVR.settimeout(1.0)
+                self.socketVR.connect((srv_addr, remotePortNo))
+            except socket.error as e:
+                print "ERROR CONNECTING: " + str(e)
+                sys.exit(1)      
+        else:
+            self.socketVR = -1
+
+        # create socket for Agent
+        try:
+            #print "creating socket"
+            self.socketAgent = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            #timeval = struct.pack('ll', 1, 0)
+            #self.socketAgent.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, timeval)
+            self.socketAgent.settimeout(1.0)
+            self.socketAgent.connect((srv_addr, remotePortNo + agentNo + 1))
+        except socket.error as e:
+            print "ERROR CONNECTING: " + str(e)
+            sys.exit(1)
 
 
+
+        # create sender and receiver
+
+        self.sender = AnnarProtoSend(self.socketVR, self.socketAgent)
+        self.receiver = AnnarProtoReceive(self.socketVR, self.socketAgent)
+
+
+        if (softwareInterfaceTimeout == -1):
+            self.softwareInterfaceTimeout = -1
+        else:
+            self.softwareInterfaceTimeout = softwareInterfaceTimeout*1000*1000/MONITOR_INTERVAL
+
+        self.done = True
+        self.interfaceNotUsed = 0
 
     # if Ctrl-C is called, threads are closed properly to avoid having to close the terminal every time something goes wrong
     def abort_signal(self, signal, frame):
@@ -165,12 +228,19 @@ class Annar4Interface(object):
         # start the Ctrl-C signal handler
         signal.signal(signal.SIGINT, self.abort_signal)
 
-        self.annarProtoMain.start()
+        if (self.softwareInterfaceTimeout != -1) and (self.done):
+            
+            self.done = False
+            self.thread = threading.Thread(target=timeout_loop)
 
-        self.annarProtoMain.getSender().sendVersionCheck(self.version)
+
+        self.sender.start()
+        self.receiver.start()
+
+        self.sender.sendVersionCheck(self.version)
         VRVersion = ""
         while(VRVersion == ""):
-            VRVersion = self.annarProtoMain.getReceiver().getVersion()
+            VRVersion = self.receiver.getVersion()
         print "/////////////////////////////////////"
         print "Client Version: " + self.version
         print "VR Version: " + VRVersion
@@ -188,8 +258,20 @@ class Annar4Interface(object):
         print "/////////////////////////////////////"
         print "EXITING..."
 
-        self.annarProtoMain.stop(wait)
-        del self.annarProtoMain
+        if self.sender is not None:
+
+            self.sender.stop(wait)
+
+        if self.receiver is not None:
+
+            self.receiver.stop(wait)
+
+        if (self.softwareInterfaceTimeout != -1) and (not self.done):
+            
+            self.done = True
+            
+            if wait:
+                self.thread.join()
 
         print "DONE."
         print "/////////////////////////////////////"
@@ -206,7 +288,7 @@ class Annar4Interface(object):
     # retrieve images and return bool for successs (needs to be executed if you want to load new images)
     def checkImages(self):
 
-        self.leftImage, self.rightImage, res = self.annarProtoMain.getReceiver().getImageData()
+        self.leftImage, self.rightImage, res = self.receiver.getImageData()
 
         return res
 
@@ -224,7 +306,7 @@ class Annar4Interface(object):
     def checkGridSensorData(self):
 
 
-        self.gridSensorDataX, self.gridSensorDataY, self.gridSensorDataZ, self.gridSensorDataRotationX, self.gridSensorDataRotationY, self.gridSensorDataRotationZ, res = self.annarProtoMain.getReceiver().getGridSensorData()
+        self.gridSensorDataX, self.gridSensorDataY, self.gridSensorDataZ, self.gridSensorDataRotationX, self.gridSensorDataRotationY, self.gridSensorDataRotationZ, res = self.receiver.getGridSensorData()
         return res
 
     # return the grid sensor data previously retrieved by checkGridSensorData()
@@ -244,7 +326,7 @@ class Annar4Interface(object):
     # retrieve head motion data and return bool for success (needs to be executed if you want to get new head motion data)
     def checkHeadMotion(self):
 
-        self.headMotionVelocityX, self.headMotionVelocityY, self.headMotionVelocityZ, self.headMotionAccelerationX, self.headMotionAccelerationY, self.headMotionAccelerationZ, self.headMotionRotationVelocityX, self.headMotionRotationVelocityY, self.headMotionRotationVelocityZ, self.headMotionRotationAccelerationX, self.headMotionRotationAccelerationY, self.headMotionRotationAccelerationZ, res = self.annarProtoMain.getReceiver().getHeadMotion()
+        self.headMotionVelocityX, self.headMotionVelocityY, self.headMotionVelocityZ, self.headMotionAccelerationX, self.headMotionAccelerationY, self.headMotionAccelerationZ, self.headMotionRotationVelocityX, self.headMotionRotationVelocityY, self.headMotionRotationVelocityZ, self.headMotionRotationAccelerationX, self.headMotionRotationAccelerationY, self.headMotionRotationAccelerationZ, res = self.receiver.getHeadMotion()
 
         return res
 
@@ -272,7 +354,7 @@ class Annar4Interface(object):
     # retrieve eye position data and return bool for success (needs to be executed if you want to get new eye position data)
     def checkEyePosition(self):
 
-        self.eyeRotationPositionX, self.eyeRotationPositionY, self.eyeRotationPositionZ, self.eyeRotationVelocityX, self.eyeRotationVelocityY, self.eyeRotationVelocityZ, res = self.annarProtoMain.getReceiver().getEyePosition()
+        self.eyeRotationPositionX, self.eyeRotationPositionY, self.eyeRotationPositionZ, self.eyeRotationVelocityX, self.eyeRotationVelocityY, self.eyeRotationVelocityZ, res = self.receiver.getEyePosition()
 
         return res
 
@@ -293,7 +375,7 @@ class Annar4Interface(object):
     # retrieve external reward and return bool for success (needs to be executed if you want to get new external reward data)
     def checkExternalReward(self):
 
-        self.externalReward, res = self.annarProtoMain.getReceiver().getExternalReward()
+        self.externalReward, res = self.receiver.getExternalReward()
 
         return res
 
@@ -305,7 +387,7 @@ class Annar4Interface(object):
     # retrieve action execution state and return bool for success (needs to be executed if you want to get new action execution state data)
     def checkActionExecState(self, actionID):
 
-        self.state, res = self.annarProtoMain.getReceiver().getActionExecState(actionID)
+        self.state, res = self.receiver.getActionExecState(actionID)
         
         return res
 
@@ -327,7 +409,7 @@ class Annar4Interface(object):
     # retrieve collision data and return bool for success (needs to be executed if you want to get new collision data)
     def checkCollision(self):
 
-        self.actionColID, self.colliderID, res = self.annarProtoMain.getReceiver().getCollision()
+        self.actionColID, self.colliderID, res = self.receiver.getCollision()
 
         return res
 
@@ -344,7 +426,7 @@ class Annar4Interface(object):
     # retrieve menu item data and return bool for success (needs to be executed if you want to get new menu item data)
     def checkMenuItem(self):
 
-        self.eventID, self.parameter, res = self.annarProtoMain.getReceiver().getMenuItem()
+        self.eventID, self.parameter, res = self.receiver.getMenuItem()
 
         return res
 
@@ -361,7 +443,7 @@ class Annar4Interface(object):
     # return True if start sync has been received
     def hasStartSyncReceived(self):
 
-        return self.annarProtoMain.getReceiver().hasStartSyncReceived()
+        return self.receiver.hasStartSyncReceived()
 
 
     ############################################################################################
@@ -375,19 +457,19 @@ class Annar4Interface(object):
     def sendAgentMovement(self, degree, distance):
 
         print "SEND & WAIT: AgentMovement"
-        waitForFullExec(self, self.annarProtoMain.getSender().sendAgentMovement(degree, distance))
+        waitForFullExec(self, self.sender.sendAgentMovement(degree, distance))
 
     # the eyes (cameras) of the agent can be moved individually in vertical directions, but only together horizontally
     def sendEyeMovement(self, panLeft, panRight, tilt):
 
         print "SEND & WAIT: EyeMovement"
-        waitForFullExec(self, self.annarProtoMain.getSender().sendEyeMovement(panLeft, panRight, tilt))
+        waitForFullExec(self, self.sender.sendEyeMovement(panLeft, panRight, tilt))
 
     # the agent fixates the eyes on a given point in the 3-dimensional space
     def sendEyeFixation(self, targetX, targetY, targetZ):
 
         print "SEND & WAIT: EyeFixation"
-        waitForFullExec(self, self.annarProtoMain.getSender().sendEyeFixation(targetX, targetY, targetZ))
+        waitForFullExec(self, self.sender.sendEyeFixation(targetX, targetY, targetZ))
 
     # resets the environment (exact function needs to be specified in your own Unity BehaviourScript)
     #
@@ -396,7 +478,7 @@ class Annar4Interface(object):
     def sendEnvironmentReset(self, type=0):
 
         print "SEND: EnvironmentReset"
-        res = self.annarProtoMain.getSender().sendEnvironmentReset(type)
+        res = self.sender.sendEnvironmentReset(type)
         time.sleep(self.msgWaitingTime)
         return res
 
@@ -407,7 +489,7 @@ class Annar4Interface(object):
     def sendTrialReset(self, type=0):
 
         print "SEND: TrialReset"
-        res = self.annarProtoMain.getSender().sendTrialReset(type)
+        res = self.sender.sendTrialReset(type)
         time.sleep(self.msgWaitingTime)
         return res
 
@@ -415,43 +497,43 @@ class Annar4Interface(object):
     def sendGraspID(self, objectID):
 
         print "SEND & WAIT: GraspID"
-        waitForFullExec(self, self.annarProtoMain.getSender().sendGraspID(objectID))
+        waitForFullExec(self, self.sender.sendGraspID(objectID))
 
     # the agent grasps for whatever is located in the position in its current view, given by a 2-dimentional point
     def sendGraspPos(self, targetX, targetY):
 
         print "SEND & WAIT: GraspPos"
-        waitForFullExec(self, self.annarProtoMain.getSender().sendGraspPos(targetX, targetY))
+        waitForFullExec(self, self.sender.sendGraspPos(targetX, targetY))
 
-    # ...
+    # NOT TESTED
     def sendPointPos(self, targetX, targetY):
 
         print "SEND & WAIT: PointPos"
-        waitForFullExec(self, self.annarProtoMain.getSender().sendPointPos(targetX, targetY))
+        waitForFullExec(self, self.sender.sendPointPos(targetX, targetY))
 
-    # ...
+    # NOT TESTED
     def sendPointID(self, objectID):
 
         print "SEND & WAIT: PointID"
-        waitForFullExec(self, self.annarProtoMain.getSender().sendPointID(objectID))
+        waitForFullExec(self, self.sender.sendPointID(objectID))
 
-    # ...
+    # NOT TESTED
     def sendInteractionID(self, objectID):
 
         print "SEND & WAIT: InteractionID"
-        waitForFullExec(self, self.annarProtoMain.getSender().sendInteractionID(objectID))
+        waitForFullExec(self, self.sender.sendInteractionID(objectID))
 
-    # ...
+    # NOT TESTED
     def sendInteractionPos(self, targetX, targetY):
 
         print "SEND & WAIT: InteractionPos"
-        waitForFullExec(self, self.annarProtoMain.getSender().sendInteractionPos(targetX, targetY))
+        waitForFullExec(self, self.sender.sendInteractionPos(targetX, targetY))
 
-    # ...
+    # NOT TESTED
     def sendStopSync(self):
 
         print "SEND: StopSync"
-        res = self.annarProtoMain.getSender().sendStopSync()
+        res = self.sender.sendStopSync()
         time.sleep(self.msgWaitingTime)
         return res
 
@@ -459,31 +541,31 @@ class Annar4Interface(object):
     def sendGraspRelease(self):
 
         print "SEND & WAIT: GraspRelease"
-        waitForFullExec(self, self.annarProtoMain.getSender().sendGraspRelease())
+        waitForFullExec(self, self.sender.sendGraspRelease())
 
     # the agent turns in the given direction (degrees)
     def sendAgentTurn(self, degree):
 
         print "SEND & WAIT: AgentTurn"
-        waitForFullExec(self, self.annarProtoMain.getSender().sendAgentTurn(degree))
+        waitForFullExec(self, self.sender.sendAgentTurn(degree))
 
-    # the agent moves towards a given point in the 3-dimensional space (currently not working)
+    # the agent moves towards a given point in the 3-dimensional space (NOT TESTED)
     def sendAgentMoveTo(self, x, y, z, targetMode=0):
 
         print "SEND & WAIT: AgentMoveTo"
-        waitForFullExec(self, self.annarProtoMain.getSender().sendAgentMoveTo(x, y, z, targetMode))
+        waitForFullExec(self, self.sender.sendAgentMoveTo(x, y, z, targetMode))
 
     # the agent interrupts whatever movement it's currently executing (only possible WITHOUT the use of the waitForFullExec() function)
     def sendAgentCancelMovement(self):
 
         print "SEND: AgentCancelMovement"
-        res = self.annarProtoMain.getSender().sendAgentCancelMovement()
+        res = self.sender.sendAgentCancelMovement()
         time.sleep(self.msgWaitingTime)
         return res
 
     # checks the version of the Unity server (this is called automatically when initializing the interface object)
     def sendVersionCheck(self):
 
-        res = self.annarProtoMain.getSender().sendVersionCheck()
+        res = self.sender.sendVersionCheck()
         time.sleep(self.msgWaitingTime)
         return res
