@@ -1,3 +1,8 @@
+"""
+Script for the Annar4Interface class, used to communicate with the according SimpleNetwork API for Unity.
+
+"""
+
 from annar4Interface import *
 from annarProtoRecv import *
 from annarProtoSend import *
@@ -14,19 +19,28 @@ import sys
 
 MONITOR_INTERVAL = 1000
 
-# function to wait until an action is COMPLETELY executed in the VR (only for actions which have an action execution state)
-def waitForFullExec(annarInterface, id, timeout = -1):
-    
 
-    # Action Execution Status Meaning:
-    #
-    # 0 = InExecution
-    # 1 = Finished
-    # 2 = Aborted
-    # 3 = Walking
-    # 4 = Rotating
-    # 5 = WalkingRotating
-    #
+def waitForFullExec(annarInterface, id, timeout = -1):
+    """
+    
+    Function to wait until an action is completely executed in the VR
+    (only for actions which have an action execution state).
+
+    Arguments:
+        annarInterface: Annar4Interface object instance.
+        id: Id of an action.
+        timeout: Timeout parameter (default = -1).
+
+    Returns:
+        actionState: Action Execution Status Meaning:
+            0 = InExecution
+            1 = Finished
+            2 = Aborted
+            3 = Walking
+            4 = Rotating
+            5 = WalkingRotating
+
+    """
 
     ret = False
     actionState = 0
@@ -55,28 +69,37 @@ def waitForFullExec(annarInterface, id, timeout = -1):
         return actionState
 
 
-# function to wait until an action is executed in the VR (only for actions which have an action execution state)
-
-# NOTE: not sure if this is old (since it only checks for the 'InExecution' action execution state, or if it only
-#       waits until the action was STARTED in the VR, not COMPLETED)
 def waitForExec(annarInterface, id, timeout = -1):
+    """
     
+    Function to wait until an action is completely executed in the VR
+    (only for actions which have an action execution state).
 
-    # Action Execution Status Meaning:
-    #
-    # 0 = InExecution
-    # 1 = Finished
-    # 2 = Aborted
-    # 3 = Walking
-    # 4 = Rotating
-    # 5 = WalkingRotating
-    #
+    NOTE: Not sure if this is old (since it only checks for the 'InExecution' 
+    action execution state, or if it only waits until the action was started 
+    in the VR, not completed).
+
+    Arguments:
+        annarInterface: Annar4Interface object instance.
+        id: Id of an action.
+        timeout: Timeout parameter (default = -1).
+
+    Returns:
+        actionState: Action Execution Status Meaning:
+            0 = InExecution
+            1 = Finished
+            2 = Aborted
+            3 = Walking
+            4 = Rotating
+            5 = WalkingRotating
+
+    """
 
     ret = False
     actionState = 0
         
     if timeout == -1:  
-    
+    Annar4Interface class, used to communicate with the according SimpleNetwork API for Unity.
         while actionState == 0:
             ret = annarInterface.checkActionExecState(id)
             if ret:
@@ -98,8 +121,9 @@ def waitForExec(annarInterface, id, timeout = -1):
 
         return actionState
 
-# loop function executed by a thread, which terminates object if a given timeout is exceeded
+# 
 def timeout_loop(self):
+    """ Loop function executed by a thread, which terminates object if a given timeout is exceeded. """
 
     while not done:
 
@@ -115,8 +139,20 @@ def timeout_loop(self):
 
 
 class Annar4Interface(object):
+    """
 
-    # initialize all needed variables belonging to the object
+    Annar4Interface class, used to communicate with the according SimpleNetwork API for Unity.
+    
+    Arguments:
+        srv_addr: IP-address of the Unity-VR host.
+        remotePortNo: Port of the Unity-VR host (usually 1337, if not: look at APPConfig.config).
+        agentNo: Id of the agent to be controlled.
+        agentOnly: If True: Only sockets for agent controlling will be created.
+        softwareInterfaceTimeout: Set a timeout threshold for the network communication (default = -1).
+
+    """
+
+
     def __init__(self, srv_addr, remotePortNo, agentNo, agentOnly, softwareInterfaceTimeout=-1):
 
         ######################################
@@ -170,11 +206,13 @@ class Annar4Interface(object):
         self.eventID = None
         self.parameter = None
 
-
+        #################
         # CREATE SOCKETS
+        #################
         if (not agentOnly):
        
         # create socket for VR
+
             try:
 
                 self.socketVR = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -189,18 +227,17 @@ class Annar4Interface(object):
             self.socketVR = -1
 
         # create socket for Agent
+
         try:
             #print "creating socket"
             self.socketAgent = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             #timeval = struct.pack('ll', 1, 0)
             #self.socketAgent.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, timeval)
             self.socketAgent.settimeout(1.0)
-            self.socketAgent.connect((srv_addr, remotePortNo + agentNo + 1))
+            self.socketAgent.connect((srv_addrabort_signal, remotePortNo + agentNo + 1))
         except socket.error as e:
             print "ERROR CONNECTING: " + str(e)
             sys.exit(1)
-
-
 
         # create sender and receiver
 
@@ -216,14 +253,28 @@ class Annar4Interface(object):
         self.done = True
         self.interfaceNotUsed = 0
 
-    # if Ctrl-C is called, threads are closed properly to avoid having to close the terminal every time something goes wrong
+
     def abort_signal(self, signal, frame):
+        """
+
+        If Ctrl-C is called, threads are closed properly to avoid having to 
+        close the terminal every time something goes wrong.
+
+        """
+
         print "\nMANUAL TERMINATION: Stopping all threads..."
         self.stop(True)
         sys.exit(0)
 
-    # start the 'annarProtoMain' instance and compare version strings with the server (if versions are different, program exits)
+
     def start(self):
+        """
+
+        Start Sender & Receiver and compare version 
+        strings with the server (if versions are different, program exits).
+
+        """
+
         
         # start the Ctrl-C signal handler
         signal.signal(signal.SIGINT, self.abort_signal)
@@ -251,8 +302,9 @@ class Annar4Interface(object):
             self.stop(True)
             sys.exit(1)
 
-    # stop the 'annarProtoMain' instance and delete it
+
     def stop(self, wait=True):
+        """ Terminates the Sender & Receiver threads. """
 
         print ""
         print "/////////////////////////////////////"
