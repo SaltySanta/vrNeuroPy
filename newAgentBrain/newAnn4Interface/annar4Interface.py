@@ -304,7 +304,14 @@ class Annar4Interface(object):
 
 
     def stop(self, wait=True):
-        """ Terminates the Sender & Receiver threads. """
+        """
+        
+        Terminates the Sender & Receiver threads.
+        
+        Arguments:
+            wait: If True, wait for threads to terminate before exiting (default = True).
+        
+        """
 
         print ""
         print "/////////////////////////////////////"
@@ -337,32 +344,72 @@ class Annar4Interface(object):
     ### 2) get the data, which actually returns the wanted data
     ############################################################################################
 
-    # retrieve images and return bool for successs (needs to be executed if you want to load new images)
+
     def checkImages(self):
+        """
+
+        Retrieves images and returns bool for successs (needs to be executed if you want to load new images).
+
+        Returns:
+            res: True, if data retrieval was successfull.
+
+        """
 
         self.leftImage, self.rightImage, res = self.receiver.getImageData()
 
         return res
 
-    # return left image retrieved by checkImages()
+
     def getImageLeft(self):
+        """
+
+        Returns left image previously retrieved by checkImages().
+
+        Returns:
+            leftImage: Image of the left eye camera of the agent.
+
+        """
 
         return self.leftImage
 
-    # return right image retrieved by checkImages()
+
     def getImageRight(self):
+        """
+
+        Returns right image previously retrieved by checkImages().
+
+        Returns:
+            rightImage: Image of the right eye camera of the agent.
+
+        """
 
         return self.rightImage
 
-    # retrieve grid sensor data and return bool for success (needs to be executed if you want to get new grid sensor data)
+
     def checkGridSensorData(self):
+        """
+
+        Retrieves grid sensor data and returns bool for success (needs to be executed if you want to get new grid sensor data).
+
+        Returns:
+            res: True, if data retrieval was successful.
+
+        """
 
 
         self.gridSensorDataX, self.gridSensorDataY, self.gridSensorDataZ, self.gridSensorDataRotationX, self.gridSensorDataRotationY, self.gridSensorDataRotationZ, res = self.receiver.getGridSensorData()
         return res
 
-    # return the grid sensor data previously retrieved by checkGridSensorData()
+
     def getGridSensorData(self):
+        """
+
+        Returns the grid sensor data previously retrieved by checkGridSensorData().
+
+        Returns:
+            res: True, if data retrieval was successful.
+
+        """
 
         gridData = []
 
