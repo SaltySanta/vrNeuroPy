@@ -85,7 +85,7 @@ def waitForExec(annarInterface, id, timeout = -1):
         timeout: Timeout parameter (default = -1).
 
     Returns:
-        actionState: Action Execution Status Meaning:
+        actionState: Action execution state.
             0 = InExecution
             1 = Finished
             2 = Aborted
@@ -407,7 +407,7 @@ class Annar4Interface(object):
         Returns the grid sensor data previously retrieved by checkGridSensorData().
 
         Returns:
-            res: True, if data retrieval was successful.
+            gridData: List with grid sensor data.
 
         """
 
@@ -422,16 +422,31 @@ class Annar4Interface(object):
 
         return gridData
 
-    # retrieve head motion data and return bool for success (needs to be executed if you want to get new head motion data)
+
     def checkHeadMotion(self):
+        """
+
+        Retrieves head motion data and returns bool for success (needs to be executed if you want to get new head motion data).
+
+        Returns:
+            res: True, if data retrieval was successful.
+
+        """
 
         self.headMotionVelocityX, self.headMotionVelocityY, self.headMotionVelocityZ, self.headMotionAccelerationX, self.headMotionAccelerationY, self.headMotionAccelerationZ, self.headMotionRotationVelocityX, self.headMotionRotationVelocityY, self.headMotionRotationVelocityZ, self.headMotionRotationAccelerationX, self.headMotionRotationAccelerationY, self.headMotionRotationAccelerationZ, res = self.receiver.getHeadMotion()
 
         return res
 
 
-    # return the head motion data previously retrieved by checkHeadMotion()
     def getHeadMotion(self):
+        """
+
+        Returns the head motion data previously retrieved by checkHeadMotion().
+
+        Returns:
+            headMotion: List with head motion data.
+
+        """
 
         headMotion = []
 
@@ -450,15 +465,31 @@ class Annar4Interface(object):
 
         return headMotion
 
-    # retrieve eye position data and return bool for success (needs to be executed if you want to get new eye position data)
+
     def checkEyePosition(self):
+        """
+
+        Retrieves eye position data and returns bool for success (needs to be executed if you want to get new eye position data).
+
+        Returns:
+            res: True, if data retrieval was successful.
+
+        """
 
         self.eyeRotationPositionX, self.eyeRotationPositionY, self.eyeRotationPositionZ, self.eyeRotationVelocityX, self.eyeRotationVelocityY, self.eyeRotationVelocityZ, res = self.receiver.getEyePosition()
 
         return res
 
-    # return the eye position data previously retrieved by checkEyePosition
+
     def getEyePosition(self):
+        """
+
+        Returns the eye position data previously retrieved by checkEyePosition().
+
+        Returns:
+            eyePosition: List with eye position data.
+
+        """
 
         eyePosition = []
 
@@ -471,67 +502,123 @@ class Annar4Interface(object):
     
         return eyePosition
 
-    # retrieve external reward and return bool for success (needs to be executed if you want to get new external reward data)
+
     def checkExternalReward(self):
+        """
+
+        Retrieves external reward data and returns bool for success (needs to be executed if you want to get new external reward data).
+
+        Returns:
+            res: True, if data retrieval was successful.
+
+        """
 
         self.externalReward, res = self.receiver.getExternalReward()
 
         return res
 
-    # return external reward previously retrieved by checkExternalReward()
+
     def getExternalReward(self):
+        """
+
+        Returns the external reward data previously retrieved by checkExternalReward().
+
+        Returns:
+            externalReward: External reward.
+
+        """
 
         return self.externalReward
 
-    # retrieve action execution state and return bool for success (needs to be executed if you want to get new action execution state data)
+
     def checkActionExecState(self, actionID):
+        """
+
+        Retrieves action execution state for a specific action and returns bool for success (needs to be executed if you want to get new action execution state data).
+
+        Returns:
+            res: True, if data retrieval was successful.
+
+        """
 
         self.state, res = self.receiver.getActionExecState(actionID)
         
         return res
 
-    # return action execution state previously retrieved by checkActionExecState()
-    #
-    # Action Execution Status Meaning:
-    #
-    # 0 = InExecution
-    # 1 = Finished
-    # 2 = Aborted
-    # 3 = Walking
-    # 4 = Rotating
-    # 5 = WalkingRotating
-    #
+
     def getActionExecState(self):
+        """
+
+        Returns the action execution data previously retrieved by checkActionExecState().
+
+        Returns:
+            state: Action execution state.
+                0 = InExecution
+                1 = Finished
+                2 = Aborted
+                3 = Walking
+                4 = Rotating
+                5 = WalkingRotating
+
+        """
 
         return self.state
 
-    # retrieve collision data and return bool for success (needs to be executed if you want to get new collision data)
-    def checkCollision(self):
 
+    def checkCollision(self):
+        """
+
+        Retrieves collision data and returns bool for success (needs to be executed if you want to get new collision data).
+
+        Returns:
+            res: True, if data retrieval was successful.
+
+        """
         self.actionColID, self.colliderID, res = self.receiver.getCollision()
 
         return res
 
-    # return collision data previously retrieved by checkCollision()
+
     def getCollision(self):
+        """
 
-        data = []
+        Returns the collision data previously retrieved by checkCollision().
 
-        data.append(self.actionColID)
-        data.append(self.colliderID)
+        Returns:
+            collisionData: List of collision data.
 
-        return data
+        """
+        collisionData = []
 
-    # retrieve menu item data and return bool for success (needs to be executed if you want to get new menu item data)
+        collisionData.append(self.actionColID)
+        collisionData.append(self.colliderID)
+
+        return collisionData
+
+
     def checkMenuItem(self):
+        """
 
+        Retrieves menu item data and returns bool for success (needs to be executed if you want to get new menu item data).
+
+        Returns:
+            res: True, if data retrieval was successful.
+
+        """
         self.eventID, self.parameter, res = self.receiver.getMenuItem()
 
         return res
 
     # return menu item event id previously retrieved by checkMenuItem()
     def getMenuItemID(self):
+        """
 
+        Returns the menu item id previously retrieved by checkMenuItem().
+
+        Returns:
+            eventID: Menu item id.
+
+        """
         return self.eventID
 
     # return menu item parameter previously retrieved by checkMenuItem()
