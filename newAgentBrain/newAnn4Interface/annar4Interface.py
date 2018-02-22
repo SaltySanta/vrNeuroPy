@@ -351,7 +351,7 @@ class Annar4Interface(object):
         Retrieves images and returns bool for successs (needs to be executed if you want to load new images).
 
         Returns:
-            res: True, if data retrieval was successfull.
+            res: True, if data retrieval was successful.
 
         """
 
@@ -366,7 +366,7 @@ class Annar4Interface(object):
         Returns left image previously retrieved by checkImages().
 
         Returns:
-            leftImage: Image of the left eye camera of the agent.
+            leftImage: Byte [], the byte data of the left image in png-format.
 
         """
 
@@ -379,7 +379,7 @@ class Annar4Interface(object):
         Returns right image previously retrieved by checkImages().
 
         Returns:
-            rightImage: Image of the right eye camera of the agent.
+            rightImage: Byte [], the byte data of the right image in png-format.
 
         """
 
@@ -404,10 +404,19 @@ class Annar4Interface(object):
     def getGridSensorData(self):
         """
 
-        Returns the grid sensor data previously retrieved by checkGridSensorData().
+        This delivers the coordinates of the agent (previously retrieved by 
+        checkGridSensorData()), like a GPS device. It is disabled by default and can be 
+        enabled by AgentScript::SendGridPosition=true.
+        Message name: MsgGridPosition
 
         Returns:
-            gridData: List with grid sensor data.
+            gridData: List with grid sensor data including:
+                gridSensorDataX: Float32, the X-coordinate of the agent.
+                gridSensorDataY: Float32, the Y-coordinate of the agent.
+                gridSensorDataZ: Float32, the Z-coordinate of the agent.
+                gridSensorDataRotationX: Float32, the X-coordinate of the agent’s rotation in the world.
+                gridSensorDataRotationY: Float32, the Y-coordinate of the agent’s rotation in the world.
+                gridSensorDataRotationZ: Float32, the Z-coordinate of the agent’s rotation in the world.
 
         """
 
@@ -441,10 +450,24 @@ class Annar4Interface(object):
     def getHeadMotion(self):
         """
 
-        Returns the head motion data previously retrieved by checkHeadMotion().
+        Delivers status information of the agent's head
+        (previously retrieved by checkHeadMotion()).
+        Message name: MsgHeadMotion
 
         Returns:
-            headMotion: List with head motion data.
+            headMotion: List with head motion data including:
+                headMotionVelocityX: Float32, X-coordinate of current movement alteration (per frame).
+                headMotionVelocityY: Float32, Y-coordinate of current movement alteration (per frame).
+                headMotionVelocityZ: Float32, Z-coordinate of current movement alteration (per frame).
+                headMotionAccelerationX: Float32, speedup X-coordinate of current rotation (per frame).
+                headMotionAccelerationY: Float32, speedup Y-coordinate of current rotation (per frame).
+                headMotionAccelerationZ: Float32, speedup Z-coordinate of current rotation (per frame).
+                headMotionRotationVelocityX: Float32, X-coordinate of current rotation alteration (per frame).
+                headMotionRotationVelocityY: Float32, Y-coordinate of current rotation alteration (per frame).
+                headMotionRotationVelocityZ: Float32, Z-coordinate of current rotation alteration (per frame).
+                headMotionRotationAccelerationX: Float32, speedup X-coordinate of current rotation (per frame).
+                headMotionRotationAccelerationY: Float32, speedup Y-coordinate of current rotation (per frame).
+                headMotionRotationAccelerationZ: Float32, speedup Z-coordinate of current rotation (per frame).
 
         """
 
@@ -484,10 +507,19 @@ class Annar4Interface(object):
     def getEyePosition(self):
         """
 
-        Returns the eye position data previously retrieved by checkEyePosition().
+        Delivers status information of the eyes of the agent
+        (previously retrieved by checkEyePosition()).
+        Message name: MsgEyePosition
+
 
         Returns:
-            eyePosition: List with eye position data.
+            eyePosition: List with eye position data including:
+                eyeRotationPositionX: Float32, X-coordinate of current rotation positon.
+                eyeRotationPositionY: Float32, Y-coordinate of current rotation positon.
+                eyeRotationPositionZ: Float32, Z-coordinate of current rotation positon.
+                eyeRotationVelocityX: Float32, X-coordinate of current rotation alteration (per frame).
+                eyeRotationVelocityY: Float32, Y-coordinate of current rotation alteration (per frame).
+                eyeRotationVelocityZ: Float32, Z-coordinate of current rotation alteration (per frame).
 
         """
 
@@ -521,10 +553,11 @@ class Annar4Interface(object):
     def getExternalReward(self):
         """
 
-        Returns the external reward data previously retrieved by checkExternalReward().
+        Delivers reward (previously retrieved by checkExternalReward()) to the agent.
+        Message name: MsgReward
 
         Returns:
-            externalReward: External reward.
+            externalReward:  Float32, the user-specified external reward for the agent.
 
         """
 
@@ -535,6 +568,9 @@ class Annar4Interface(object):
         """
 
         Retrieves action execution state for a specific action and returns bool for success (needs to be executed if you want to get new action execution state data).
+
+        Arguments:
+            actionID: Int32, the value to identify the action.
 
         Returns:
             res: True, if data retrieval was successful.
@@ -549,10 +585,12 @@ class Annar4Interface(object):
     def getActionExecState(self):
         """
 
-        Returns the action execution data previously retrieved by checkActionExecState().
+        Delivers the execution status of the last action
+        (previously retrieved by checkActionExecState()).
+        Message name: MsgActionExecutationStatus
 
         Returns:
-            state: Action execution state.
+            state: Int32, An enum describing the execution status of the action:
                 0 = InExecution
                 1 = Finished
                 2 = Aborted
@@ -585,7 +623,9 @@ class Annar4Interface(object):
         Returns the collision data previously retrieved by checkCollision().
 
         Returns:
-            collisionData: List of collision data.
+            collisionData: List of collision data includig:
+                actionColID: Int32, the value to identify the current action.
+                colliderID: Int32, the ID of the collided item.
 
         """
         collisionData = []
@@ -616,7 +656,8 @@ class Annar4Interface(object):
         Returns the menu item id previously retrieved by checkMenuItem().
 
         Returns:
-            eventID: Menu item id.
+            eventID: Int32, an enum to identify the event: 0 = start simulation, 1= stop simulation.
+
 
         """
         return self.eventID
@@ -628,7 +669,7 @@ class Annar4Interface(object):
         Returns the menu item parameter previously retrieved by checkMenuItem().
 
         Returns:
-            parameter: Menu item parameter.
+            parameter: Optional string, a string to send additional parameters.
 
         """
         return self.parameter
@@ -658,11 +699,13 @@ class Annar4Interface(object):
     def sendAgentMovement(self, degree, distance):
         """
 
-        Sends the agent to walk a certain distance in a certain direction.
+        Execute a movement of the agent.
+        Message name: MsgAgentMovement
 
         Arguments:
-            degree: Specifies the direction to move.
-            distance: Specifies the distance to move.
+            degree: Float32, the direction to walk in degree(0 to 360◦). This direction 
+            is relative to the world- or global coordinate system.
+            distance: Float, the distance to walk.
         
         """
         print "SEND & WAIT: AgentMovement"
@@ -672,12 +715,17 @@ class Annar4Interface(object):
     def sendEyeMovement(self, panLeft, panRight, tilt):
         """
 
-        The eyes (cameras) of the agent can be moved individually in horizontal directions, but only together vertically.
+        This command rotates the eyes of the agent.
+        Message name: MsgAgentEyemovement
+
 
         Arguments:
-            panLeft: Degrees to turn the left eye vertically.
-            panRight: Degrees to turn the right eye vertically.
-            tilt: Degrees to turn both eyes horizontally.
+            panLeft: Float32, the rotation angle of the left eye in horizontal direction 
+            (positive values rotate it leftwards). The view angle range is -30 to +30◦.
+            panRight: Float32, the rotation angle of the right eye in horizontal direction 
+            (positive values rotate it leftwards). The view angle range is -30 to +30◦.
+            tilt: Float32, the rotation angle of the left and right eye in vertical direction. 
+            The view angle range is -30 to +30◦.
         
         """
         print "SEND & WAIT: EyeMovement"
@@ -687,12 +735,13 @@ class Annar4Interface(object):
     def sendEyeFixation(self, targetX, targetY, targetZ):
         """
 
-        The agent fixates the eyes on a given point in the 3-dimensional space.
+        This command fixates the eyes at a certain point in the world coordinate system.
+        Message name: MsgAgentEyefixation
 
         Arguments:
-            targetX: X-coordinate of the given point.
-            targetY: Y-coordinate of the given point.
-            targetZ: Z-coordinate of the given point.
+            targetX: Float32, the X-coordinate of the target point.
+            targetY: Float32, the Y-coordinate of the target point.
+            targetZ: Float32, the Z-coordinate of the target point.
         
         """
         print "SEND & WAIT: EyeFixation"
@@ -702,13 +751,18 @@ class Annar4Interface(object):
     def sendEnvironmentReset(self, type=0):
         """
 
-        Resets the environment (exact function needs to be specified in your own Unity BehaviourScript).
+        Send a command that sets the VR back to a chosen state. This message should be
+        used for restarting the whole experiment.
+        Message name: MsgEnvironmentReset
+
 
         NOTE: Waiting time, because EnvironmentReset does NOT return an execution status. If you experience
         the reset not being finished in time, increase msgWaitingTime parameter.
 
         Arguments:
-            type: Type of environment reset (own types can be specified).
+            type: Optional Int32, a parameter that selects one configuration if there 
+            are more than one.
+
         
         """
         print "SEND: EnvironmentReset"
@@ -720,13 +774,17 @@ class Annar4Interface(object):
     def sendTrialReset(self, type=0):
         """
 
-        Resets the trial (exact function needs to be specified in your own Unity BehaviourScript).
+        Send a command that sets partly the VR back to an chosen state. This message should
+        be used for starting a new trial in an experiment.
+        Message name: MsgTrialReset
+
 
         NOTE: Waiting time, because TrialReset does NOT return an execution status. If you experience
         the reset not being finished in time, increase msgWaitingTime parameter.
 
         Arguments:
-            type: Type of trial reset (own types can be specified).
+            type: Optional Int32, a parameter that selects one configuration if there 
+            are more than one.
         
         """
         print "SEND: TrialReset"
@@ -738,93 +796,194 @@ class Annar4Interface(object):
     def sendGraspID(self, objectID):
         """
 
-        The agents grasps for a certain object (the objectID needs to be assigned to an existing object in the BehaviourScript).
+        Try to grasp an object with the given ID.
+        Message name: MsgAgentGraspID
 
         Arguments:
-            objectID: Id of the object to be grasped.
+            objectID:  Int32, the value to identify the target object. The mapping value 
+            to unity object depends on the current scenario.
         
         """
         print "SEND & WAIT: GraspID"
         waitForFullExec(self, self.sender.sendGraspID(objectID))
 
-    # the agent grasps for whatever object is located in the position in its current view, given by a 2-dimentional point
+
     def sendGraspPos(self, targetX, targetY):
         """
 
-        The agent grasps for whatever object is located in a certain position in its current view, given by a 2-dimentional point.
+        Try to grasp an object at the given position, specified in the viewfield coordinate
+        system of the left eye.
+        Message name: MsgAgentGraspPos
 
         Arguments:
-            targetX: X-coordinate of the given point.
-            targetY: Y-coordinate of the given point.
+            targetX: Float value, the X-coordinate of the position in the coordinate system 
+            of the left eye.
+            targetY: Float value, the Y-coordinate of the position in the coordinate system 
+            of the left eye.
         
         """
         print "SEND & WAIT: GraspPos"
         waitForFullExec(self, self.sender.sendGraspPos(targetX, targetY))
 
-    # NOT TESTED
+
     def sendPointPos(self, targetX, targetY):
         """
 
-        FUNCTION NOT TESTED YET.
+        Point at a position, specified in the viewfield coordinate system of the left eye. 
+        Coordinate 0/0 is in the upper left corner.
+        Message name: MsgAgentPointPos
+
+        NOTE: Not tested yet.
+
+        Arguments:
+            targetX: Float value, the X-coordinate of the position in the coordinate system of 
+            the left eye.
+            targetY: Float value, the Y-coordinate of the position in the coordinate system of 
+            the left eye.
 
         """
         print "SEND & WAIT: PointPos"
         waitForFullExec(self, self.sender.sendPointPos(targetX, targetY))
 
-    # NOT TESTED
+
     def sendPointID(self, objectID):
+        """
+
+        Point at an object with the given ID.
+        Message name: MsgAgentPointID
+
+        NOTE: Not tested yet.
+
+        Arguments:
+            objectID: Int32, the value to identify the target object. The mapping value to 
+            unity object depends on the current scenario.
+
+        """
 
         print "SEND & WAIT: PointID"
         waitForFullExec(self, self.sender.sendPointID(objectID))
 
-    # NOT TESTED
+
     def sendInteractionID(self, objectID):
+        """
+
+        Interact with an object with the given ID. The type of interaction should be specified
+        and implemented in the VR itself.
+        Message name: MsgAgentInteractionID
+
+        NOTE: Not tested yet.
+
+        Arguments:
+            objectID: Int32, the value to identify the target object. The mapping value to 
+            unity object depends on the current scenario.
+
+        """
 
         print "SEND & WAIT: InteractionID"
         waitForFullExec(self, self.sender.sendInteractionID(objectID))
 
-    # NOT TESTED
+
     def sendInteractionPos(self, targetX, targetY):
+        """
+
+        Interact with an object at a given position, specified in the viewfield coordinate 
+        system of the left eye. Coordinate 0/0 is in the upper left corner. The type of
+        interaction should be specified and implemented in the VR itself.
+        Message name: MsgAgentInteractionPos
+
+        NOTE: Not tested yet.
+
+        Arguments:
+            targetX: Float value, the x coordinate of the position in the coordinate system 
+            of the left eye.
+            targetY: Float value, the y coordinate of the position in the coordinate system 
+            of the left eye.
+
+        """
 
         print "SEND & WAIT: InteractionPos"
         waitForFullExec(self, self.sender.sendInteractionPos(targetX, targetY))
 
-    # NOT TESTED
+
     def sendStopSync(self):
+        """
+
+        NOTE: NOT TESTED YET.
+
+        """
 
         print "SEND: StopSync"
         res = self.sender.sendStopSync()
         time.sleep(self.msgWaitingTime)
         return res
 
-    # the agent lets go of whatever object it holds in its hand
-    def sendGraspRelease(self):
 
+    def sendGraspRelease(self):
+        """
+
+        Commands the agent to let go of whatever object it holds in its hand.
+
+        """
         print "SEND & WAIT: GraspRelease"
         waitForFullExec(self, self.sender.sendGraspRelease())
 
-    # the agent turns in the given direction (degrees)
+
     def sendAgentTurn(self, degree):
+        """
+
+        Turns the Agent around the vertical axis.
+        Message name: MsgAgentTurn
+
+        Arguments:
+            degree: Float value, the angle for the clockwise turn relative to the current 
+            direction of the agent.
+
+        """
 
         print "SEND & WAIT: AgentTurn"
         waitForFullExec(self, self.sender.sendAgentTurn(degree))
 
-    # the agent moves towards a given point in the 3-dimensional space (NOT TESTED)
+
     def sendAgentMoveTo(self, x, y, z, targetMode=0):
+        """
+
+        Execute a movement of the agent to a certain position along a path.
+        Message name: MsgAgentMoveTo
+
+        NOTE: Currently only usable in the SpartialCognition scene which has
+        space grid and A* search.
+
+        x: Float32, the X-coordinate of the target point.
+        y: Float32, the Y-coordinate of the target point.
+        z: Float32, the Z-coordinate of the target point.
+
+        """
 
         print "SEND & WAIT: AgentMoveTo"
         waitForFullExec(self, self.sender.sendAgentMoveTo(x, y, z, targetMode))
 
-    # the agent interrupts whatever movement it's currently executing (only possible WITHOUT the use of the waitForFullExec() function)
+
     def sendAgentCancelMovement(self):
+        """
+
+        The agent interrupts whatever movement it's currently executing 
+        (only possible WITHOUT the use of the waitForFullExec() function).
+
+        """
 
         print "SEND: AgentCancelMovement"
         res = self.sender.sendAgentCancelMovement()
         time.sleep(self.msgWaitingTime)
         return res
 
-    # checks the version of the Unity server (this is called automatically when initializing the interface object)
+
     def sendVersionCheck(self):
+        """
+
+        Checks the version of the Unity server 
+        (this is called automatically when initializing the interface object).
+
+        """
 
         res = self.sender.sendVersionCheck()
         time.sleep(self.msgWaitingTime)
