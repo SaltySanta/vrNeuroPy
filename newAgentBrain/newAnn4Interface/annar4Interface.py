@@ -609,7 +609,7 @@ class Annar4Interface(object):
 
         return res
 
-    # return menu item event id previously retrieved by checkMenuItem()
+
     def getMenuItemID(self):
         """
 
@@ -621,13 +621,28 @@ class Annar4Interface(object):
         """
         return self.eventID
 
-    # return menu item parameter previously retrieved by checkMenuItem()
-    def getMenuItemParameter(self):
 
+    def getMenuItemParameter(self):
+        """
+
+        Returns the menu item parameter previously retrieved by checkMenuItem().
+
+        Returns:
+            parameter: Menu item parameter.
+
+        """
         return self.parameter
 
-    # return True if start sync has been received
+
     def hasStartSyncReceived(self):
+        """
+
+        Returns True if start sync has been received.
+
+        Returns:
+            hasStartSyncReceived(): True, if start sync has been received.
+
+        """
 
         return self.receiver.hasStartSyncReceived()
 
@@ -635,65 +650,124 @@ class Annar4Interface(object):
     ############################################################################################
     ### SENDING FUNCTIONS
     ###
-    ### Functions with HAVE an Action Execution State, are executed with the waitForFullExec() function.
+    ### Functions which HAVE an Action Execution State, are executed with the waitForFullExec() function.
     ### If you don't want to wait for the full execution, you can look at the waitForExec() function at the top of the file.
     ############################################################################################
 
     # send the agent to walk a certain distance in a certain direction (degrees)
     def sendAgentMovement(self, degree, distance):
+        """
 
+        Sends the agent to walk a certain distance in a certain direction.
+
+        Arguments:
+            degree: Specifies the direction to move.
+            distance: Specifies the distance to move.
+        
+        """
         print "SEND & WAIT: AgentMovement"
         waitForFullExec(self, self.sender.sendAgentMovement(degree, distance))
 
-    # the eyes (cameras) of the agent can be moved individually in vertical directions, but only together horizontally
-    def sendEyeMovement(self, panLeft, panRight, tilt):
 
+    def sendEyeMovement(self, panLeft, panRight, tilt):
+        """
+
+        The eyes (cameras) of the agent can be moved individually in horizontal directions, but only together vertically.
+
+        Arguments:
+            panLeft: Degrees to turn the left eye vertically.
+            panRight: Degrees to turn the right eye vertically.
+            tilt: Degrees to turn both eyes horizontally.
+        
+        """
         print "SEND & WAIT: EyeMovement"
         waitForFullExec(self, self.sender.sendEyeMovement(panLeft, panRight, tilt))
 
-    # the agent fixates the eyes on a given point in the 3-dimensional space
-    def sendEyeFixation(self, targetX, targetY, targetZ):
 
+    def sendEyeFixation(self, targetX, targetY, targetZ):
+        """
+
+        The agent fixates the eyes on a given point in the 3-dimensional space.
+
+        Arguments:
+            targetX: X-coordinate of the given point.
+            targetY: Y-coordinate of the given point.
+            targetZ: Z-coordinate of the given point.
+        
+        """
         print "SEND & WAIT: EyeFixation"
         waitForFullExec(self, self.sender.sendEyeFixation(targetX, targetY, targetZ))
 
-    # resets the environment (exact function needs to be specified in your own Unity BehaviourScript)
-    #
-    # waiting time, because EnvironmentReset does NOT return an execution status. if you experience
-    # the reset not being finished in time, increase msgWaitingTime
-    def sendEnvironmentReset(self, type=0):
 
+    def sendEnvironmentReset(self, type=0):
+        """
+
+        Resets the environment (exact function needs to be specified in your own Unity BehaviourScript).
+
+        NOTE: Waiting time, because EnvironmentReset does NOT return an execution status. If you experience
+        the reset not being finished in time, increase msgWaitingTime parameter.
+
+        Arguments:
+            type: Type of environment reset (own types can be specified).
+        
+        """
         print "SEND: EnvironmentReset"
         res = self.sender.sendEnvironmentReset(type)
         time.sleep(self.msgWaitingTime)
         return res
 
-    # resets the trial (exact function needs to be specified in your own Unity BehaviourScript)
-    #
-    # waiting time, because TrialReset does NOT return an execution status. if you experience
-    # the reset not being finished in time, increase msgWaitingTime
-    def sendTrialReset(self, type=0):
 
+    def sendTrialReset(self, type=0):
+        """
+
+        Resets the trial (exact function needs to be specified in your own Unity BehaviourScript).
+
+        NOTE: Waiting time, because TrialReset does NOT return an execution status. If you experience
+        the reset not being finished in time, increase msgWaitingTime parameter.
+
+        Arguments:
+            type: Type of trial reset (own types can be specified).
+        
+        """
         print "SEND: TrialReset"
         res = self.sender.sendTrialReset(type)
         time.sleep(self.msgWaitingTime)
         return res
 
-    # the agents grasps for a certain object (the objectID needs to be assigned to an existing object in the BehaviourScript)
-    def sendGraspID(self, objectID):
 
+    def sendGraspID(self, objectID):
+        """
+
+        The agents grasps for a certain object (the objectID needs to be assigned to an existing object in the BehaviourScript).
+
+        Arguments:
+            objectID: Id of the object to be grasped.
+        
+        """
         print "SEND & WAIT: GraspID"
         waitForFullExec(self, self.sender.sendGraspID(objectID))
 
-    # the agent grasps for whatever is located in the position in its current view, given by a 2-dimentional point
+    # the agent grasps for whatever object is located in the position in its current view, given by a 2-dimentional point
     def sendGraspPos(self, targetX, targetY):
+        """
 
+        The agent grasps for whatever object is located in a certain position in its current view, given by a 2-dimentional point.
+
+        Arguments:
+            targetX: X-coordinate of the given point.
+            targetY: Y-coordinate of the given point.
+        
+        """
         print "SEND & WAIT: GraspPos"
         waitForFullExec(self, self.sender.sendGraspPos(targetX, targetY))
 
     # NOT TESTED
     def sendPointPos(self, targetX, targetY):
+        """
 
+        FUNCTION NOT TESTED YET.
+
+        """
         print "SEND & WAIT: PointPos"
         waitForFullExec(self, self.sender.sendPointPos(targetX, targetY))
 
