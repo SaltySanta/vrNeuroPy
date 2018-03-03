@@ -15,8 +15,17 @@ RAND_MAX = 32767
 S_MSG = 1400
 MAX_MSG = 16*2024*1024
 
-# function to receive the whole message of a certain length
+
 def recvall(sock, count):
+    """
+
+    Function to receive a message of a certain length, that is bigger than the maximum buffer size.
+
+    Arguments:
+        sock: Socket object.
+        count: Message length.
+
+    """
     buf = ''
     while count:
         newbuf = sock.recv(count)
@@ -27,8 +36,16 @@ def recvall(sock, count):
 
 
 class AnnarProtoReceive(object):
+    """
 
-    # initialize all needed variables belonging to the object
+    AnnarProtoReceive object to manage incoming protobuf messages from Unity.
+
+    Arguments:
+        socketVR: Socket for the environment.
+        socketAgent: Socket for an agent.
+
+    """
+    
     def __init__(self, socketVR, socketAgent):
 
         self.versionString = ""
@@ -92,10 +109,18 @@ class AnnarProtoReceive(object):
         self.buffer = None
         self.messageStream = None
 
-    
-    # turn image strings into PIL image objects and return them plus bool for success
-    def getImageData(self):
 
+    def getImageData(self):
+        """
+
+        Turns image strings into PIL image objects and returns them as well as a bool for success.
+
+        Returns:
+            leftImage: Image of the left camera eye as a PIL object.
+            rightImage: Image of the right camera eye as a PIL object.
+            res: True, if image conversion to PIL objects was successful.
+
+        """
         self.waitForMutexUnlock()
 
         leftBuff = StringIO.StringIO()
@@ -117,15 +142,36 @@ class AnnarProtoReceive(object):
 
         return [leftImage, rightImage, res]
 
-    # return version string
-    def getVersion(self):
 
+    def getVersion(self):
+        """
+
+        Returns the version string.
+
+        Returns:
+            versionString: Version string.
+
+        """
         self.waitForMutexUnlock()
 
         return self.versionString
 
-    # return grid sensor data and bool for retrieval success
+
     def getGridsensorData(self):
+        """
+
+        Returns grid sensor data and bool for retrieval success.
+
+        Returns:
+            targetX: Float32, the X-coordinate of the agent.
+            targetY: Float32, the Y-coordinate of the agent.
+            targetZ: Float32, the Z-coordinate of the agent.
+            targetRotationX: Float32, the X-coordinate of the agent’s rotation in the world.
+            targetRotationY: Float32, the Y-coordinate of the agent’s rotation in the world.
+            targetRotationZ: Float32, the Z-coordinate of the agent’s rotation in the world.
+            res: Bool, True if retrieval was successful.
+
+        """
 
         if not self.validGridsensor:
             res = False
@@ -135,8 +181,17 @@ class AnnarProtoReceive(object):
 
         return [self.targetX, self.targetY, self.targetZ, self.targetRotationX, self.targetRotationY, self.targetRotationZ, res]
 
-    # return external reward and bool for retrieval success
+
     def getExternalReward(self):
+        """
+
+        Returns the external reward and a bool for retrieval success.
+
+        Returns:
+            externalReward: Float32, the user-specified external reward for the agent.
+            res: Bool, True if retrieval was successful.
+
+        """
 
         if not self.validExternalReward:
             res = False
@@ -146,8 +201,20 @@ class AnnarProtoReceive(object):
 
         return [self.externalReward, res]
 
-    # return action execution state and bool for retrieval success
+
     def getActionExecState(self, actionID):
+        """
+
+        Returns the action execution state for a specific action and a bool for retrieval success.
+
+        Arguments:
+            actionID: Id of the target action.
+
+        Returns:
+            actionExecutionMap[actionID]: Action execution state for the given action id.
+            res: Bool, True if retrieval was successful.
+
+        """
 
         if (not self.validActionState) or (not (actionID in self.actionExecutionMap)):
             res = False
@@ -161,8 +228,18 @@ class AnnarProtoReceive(object):
 
         return [self.actionExecutionMap[actionID], res]
 
-    # return collision data and bool for retrieval success
+
     def getCollision(self):
+        """
+
+        Returns collision data and a bool for retrieval success.
+
+        Returns:
+            actionColID: Int32, the value to identify the current action.
+            colliderID: Int32, the ID of the collided item.
+            res: Bool, True if retrieval was successful.
+
+        """
 
         if not self.validCollision:
             res = False
@@ -171,8 +248,22 @@ class AnnarProtoReceive(object):
 
         return [self.actionColID, self.colliderID, res]
 
-    # return eye position data and bool for retrieval success
+
     def getEyePosition(self):
+        """
+
+        Returns eye position data and bool for retrieval success.
+
+        Returns:
+            rotationPositionX: Float32, X-coordinate of current rotation positon.
+            rotationPositionY: Float32, Y-coordinate of current rotation positon.
+            rotationPositionZ: Float32, Z-coordinate of current rotation positon.
+            rotationVelocityEyeX: Float32, X-coordinate of current rotation alteration (per frame).
+            rotationVelocityEyeY: Float32, Y-coordinate of current rotation alteration (per frame).
+            rotationVelocityEyeZ: Float32, Z-coordinate of current rotation alteration (per frame).
+            res: Bool, True if retrieval was successful.
+
+        """
 
         if not self.validEyePosition:
             res = False
@@ -182,8 +273,28 @@ class AnnarProtoReceive(object):
 
         return [self.rotationPositionX, self.rotationPositionY, self.rotationPositionZ, self.rotationVelocityEyeX, self.rotationVelocityEyeY, self.rotationVelocityEyeZ, res]
 
-    # return head motion data and bool for retrieval success
+
     def getHeadMotion(self):
+        """
+
+        Returns head motion data and a bool for retrieval success.
+
+        Returns:
+            velocityX: Float32, X-coordinate of current movement alteration (per frame).
+            velocityY: Float32, Y-coordinate of current movement alteration (per frame).
+            velocityZ: Float32, Z-coordinate of current movement alteration (per frame).
+            accelerationX: Float32, speedup X-coordinate of current rotation (per frame).
+            accelerationY: Float32, speedup Y-coordinate of current rotation (per frame).
+            accelerationZ: Float32, speedup Z-coordinate of current rotation (per frame).
+            rotationVelocityX: Float32, X-coordinate of current rotation alteration (per frame).
+            rotationVelocityY: Float32, Y-coordinate of current rotation alteration (per frame).
+            rotationVelocityZ: Float32, Z-coordinate of current rotation alteration (per frame).
+            rotationAccelerationX: Float32, speedup X-coordinate of current rotation (per frame).
+            rotationAccelerationY: Float32, speedup Y-coordinate of current rotation (per frame).
+            rotationAccelerationZ: Float32, speedup Z-coordinate of current rotation (per frame).
+            res: Bool, True if retrieval was successful.
+
+        """
 
         if not self.validHeadMotion:
             res = False
@@ -193,8 +304,18 @@ class AnnarProtoReceive(object):
 
         return [self.velocityX, self.velocityY, self.velocityZ, self.accelerationX, self.accelerationY, self.accelerationZ, self.rotationVelocityX, self.rotationVelocityY, self.rotationVelocityZ, self.rotationAccelerationX, self.rotationAccelerationY, self.rotationAccelerationZ, res]
 
-    # return menu item data and bool for retrieval success
+
     def getMenuItem(self):
+        """
+
+        Returns menu item data and a bool for retrieval success.
+
+        Returns:
+            eventID: Int32, an enum to identify the event: 0 = start simulation, 1= stop simulation.
+            parameter: Optional string, a string to send additional parameters.
+            res: Bool, True if retrieval was successful.
+
+        """
 
         if not self.validMenuItem:
             res = False
@@ -204,8 +325,16 @@ class AnnarProtoReceive(object):
 
         return [self.eventID, self.parameter, res]
 
-    # return bool for hasReceivedStartSync
+
     def hasStartSyncReceived(self):
+        """
+
+        Returns bool for hasReceivedStartSync.
+
+        Returns:
+            True, if start sync was received.
+
+        """
 
         if not self.hasReceivedStartSync:
             return False
@@ -214,8 +343,16 @@ class AnnarProtoReceive(object):
         self.hasReceivedStartSync = False
         return True
 
-    # parse Protobuf message object from string and retrieve available data
+
     def storeData(self, dataLength):
+        """
+
+        Parses a Protobuf message object from string and retrieves the available data from it.
+
+        Arguments:
+            dataLength: Length of the stored Protobuf message.
+
+        """
 
         tmp = MsgObject()
         tmp.ParseFromString(self.messageStream)
@@ -324,8 +461,9 @@ class AnnarProtoReceive(object):
 
             self.mutex = False
 
-    # start thread for receiving loop
+
     def start(self):
+        """ Starts a thread for the receiving loop. """
 
         if self.done:
 
@@ -333,22 +471,25 @@ class AnnarProtoReceive(object):
             self.thread = threading.Thread(target=self.mainLoop)
             self.thread.start()
 
-    # stop own main loop thread
+
     def stop(self, wait):
+        """ Stops the thread for the receiving loop. """
 
         if not self.done:
             self.done = True
             if wait:
                 self.thread.join()
 
-    # main receiving loop executed by a thread: receives imcoming messages
-    # incoming messages consist of a 4 byte header containing the length of the rest of the message and the rest of the message
+
     def mainLoop(self):
+        """ Loop function to receive incoming messages, to be executed by a thread. """
+
         while not self.done:
 
             try:
-                # retrieve header of message
+                # retrieve header of message encoding the length of the rest
                 dataLengthbuf = recvall(self.socketAgent, 4)
+                
                 # bit order of header is important when converting it into an integer type ('<i')
                 dataLength = struct.unpack('<i', dataLengthbuf)[0]
                 if dataLength != 0:
@@ -367,8 +508,9 @@ class AnnarProtoReceive(object):
 
             self.storeData(dataLength)
 
-    # simple function to wait until the mutex is unlocked
+
     def waitForMutexUnlock(self):
+        """ Simple function to wait until the mutex in unlocked. """
 
         while self.mutex:
             time.sleep(1/1000000.0)
