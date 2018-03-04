@@ -763,7 +763,6 @@ class Annar4Interface(object):
             type: Optional Int32, a parameter that selects one configuration if there 
             are more than one.
 
-        
         """
         print "SEND: EnvironmentReset"
         res = self.sender.sendEnvironmentReset(type)

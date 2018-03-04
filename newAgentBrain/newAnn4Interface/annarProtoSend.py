@@ -10,6 +10,15 @@ from MsgObject_pb2 import *
 RAND_MAX = 32767
 
 class AnnarProtoSend(object):
+    """
+
+    AnnarProtoSend object to manage outgoing protobuf messages to Unity.
+
+    Arguments:
+        socketVR: Socket for the environment.
+        socketAgent: Socket for an agent.
+
+    """
 
     def __init__(self, socketVR, socketAgent):
 
@@ -24,6 +33,14 @@ class AnnarProtoSend(object):
     ####################
 
     def sendVersionCheck(self, versionString):
+        """
+
+        Checks the version of the Unity server.
+
+        Arguments:
+            versionString: Version string of the client.
+
+        """
 
         unit = MsgObject()
 
@@ -35,7 +52,17 @@ class AnnarProtoSend(object):
 
 
     def sendAgentMovement(self, degree, distance):
+        """
 
+        Execute a movement of the agent.
+        Message name: MsgAgentMovement
+
+        Arguments:
+            degree: Float32, the direction to walk in degree(0 to 360◦). This direction 
+            is relative to the world- or global coordinate system.
+            distance: Float, the distance to walk.
+        
+        """
         unit = MsgObject()
         
         id = random.randrange(0, RAND_MAX)
@@ -51,7 +78,21 @@ class AnnarProtoSend(object):
 
 
     def sendEyeMovement(self, panLeft, panRight, tilt):
+        """
 
+        This command rotates the eyes of the agent.
+        Message name: MsgAgentEyemovement
+
+
+        Arguments:
+            panLeft: Float32, the rotation angle of the left eye in horizontal direction 
+            (positive values rotate it leftwards). The view angle range is -30 to +30◦.
+            panRight: Float32, the rotation angle of the right eye in horizontal direction 
+            (positive values rotate it leftwards). The view angle range is -30 to +30◦.
+            tilt: Float32, the rotation angle of the left and right eye in vertical direction. 
+            The view angle range is -30 to +30◦.
+        
+        """
         unit = MsgObject()
 
         id = random.randrange(0, RAND_MAX)
@@ -68,7 +109,17 @@ class AnnarProtoSend(object):
 
 
     def sendEyeFixation(self, targetX, targetY, targetZ):
+        """
 
+        This command fixates the eyes at a certain point in the world coordinate system.
+        Message name: MsgAgentEyefixation
+
+        Arguments:
+            targetX: Float32, the X-coordinate of the target point.
+            targetY: Float32, the Y-coordinate of the target point.
+            targetZ: Float32, the Z-coordinate of the target point.
+        
+        """
         unit = MsgObject()
 
         id = random.randrange(0, RAND_MAX)
@@ -85,7 +136,17 @@ class AnnarProtoSend(object):
 
 
     def sendEnvironmentReset(self, type):
+        """
 
+        Send a command that sets the VR back to a chosen state. This message should be
+        used for restarting the whole experiment.
+        Message name: MsgEnvironmentReset
+
+        Arguments:
+            type: Optional Int32, a parameter that selects one configuration if there 
+            are more than one.
+        
+        """
         unit = MsgObject()
 
         unit.msgEnvironmentReset.Type = type
@@ -96,7 +157,17 @@ class AnnarProtoSend(object):
 
 
     def sendTrialReset(self, type):
+        """
 
+        Send a command that sets partly the VR back to an chosen state. This message should
+        be used for starting a new trial in an experiment.
+        Message name: MsgTrialReset
+
+        Arguments:
+            type: Optional Int32, a parameter that selects one configuration if there 
+            are more than one.
+        
+        """
         unit = MsgObject()
 
         unit.msgTrialReset.Type = type
@@ -107,13 +178,30 @@ class AnnarProtoSend(object):
 
 
     def sendGeneralMsg(self, ownMsg):
+        """
+
+        NOTE: NOT TESTED YET.
+
+        """
 
         self.mutex = True
         self.sentQueue.put(ownMsg)
         self.mutex = False
 
-    def sendPointID(self, objectID):
 
+    def sendPointID(self, objectID):
+        """
+
+        Point at an object with the given ID.
+        Message name: MsgAgentPointID
+
+        NOTE: Not tested yet.
+
+        Arguments:
+            objectID: Int32, the value to identify the target object. The mapping value to 
+            unity object depends on the current scenario.
+
+        """
         unit = MsgObject()
 
         id = random.randrange(0, RAND_MAX)
@@ -127,8 +215,21 @@ class AnnarProtoSend(object):
         return id
 
     def sendPointPos(self, targetX, targetY):
+        """
 
+        Point at a position, specified in the viewfield coordinate system of the left eye. 
+        Coordinate 0/0 is in the upper left corner.
+        Message name: MsgAgentPointPos
 
+        NOTE: Not tested yet.
+
+        Arguments:
+            targetX: Float value, the X-coordinate of the position in the coordinate system of 
+            the left eye.
+            targetY: Float value, the Y-coordinate of the position in the coordinate system of 
+            the left eye.
+
+        """
         unit = MsgObject()
 
         id = random.randrange(0, RAND_MAX)
@@ -145,7 +246,16 @@ class AnnarProtoSend(object):
 
 
     def sendGraspID(self, objectID):
+        """
 
+        Try to grasp an object with the given ID.
+        Message name: MsgAgentGraspID
+
+        Arguments:
+            objectID:  Int32, the value to identify the target object. The mapping value 
+            to unity object depends on the current scenario.
+        
+        """
         unit = MsgObject()
 
         id = random.randrange(0, RAND_MAX)
@@ -161,7 +271,19 @@ class AnnarProtoSend(object):
 
 
     def sendGraspPos(self, targetX, targetY):
+        """
 
+        Try to grasp an object at the given position, specified in the viewfield coordinate
+        system of the left eye.
+        Message name: MsgAgentGraspPos
+
+        Arguments:
+            targetX: Float value, the X-coordinate of the position in the coordinate system 
+            of the left eye.
+            targetY: Float value, the Y-coordinate of the position in the coordinate system 
+            of the left eye.
+        
+        """
         unit = MsgObject()
 
         id = random.randrange(0, RAND_MAX)
@@ -179,7 +301,11 @@ class AnnarProtoSend(object):
 
 
     def sendGraspRelease(self):
+        """
 
+        Commands the agent to let go of whatever object it holds in its hand.
+
+        """
         unit = MsgObject()
 
         id = random.randrange(0, RAND_MAX)
@@ -194,7 +320,16 @@ class AnnarProtoSend(object):
 
 
     def sendAgentTurn(self, degree):
+        """
 
+        Turns the Agent around the vertical axis.
+        Message name: MsgAgentTurn
+
+        Arguments:
+            degree: Float value, the angle for the clockwise turn relative to the current 
+            direction of the agent.
+
+        """
         unit = MsgObject()
 
         id = random.randrange(0, RAND_MAX)
@@ -209,7 +344,19 @@ class AnnarProtoSend(object):
         return id
 
     def sendAgentMoveTo(self, x, y, z, targetMode):
+        """
 
+        Execute a movement of the agent to a certain position along a path.
+        Message name: MsgAgentMoveTo
+
+        NOTE: Currently only usable in the SpartialCognition scene which has
+        space grid and A* search.
+
+        x: Float32, the X-coordinate of the target point.
+        y: Float32, the Y-coordinate of the target point.
+        z: Float32, the Z-coordinate of the target point.
+
+        """
         unit = MsgObject()
 
         id = random.randrange(0, RAND_MAX)
@@ -228,7 +375,11 @@ class AnnarProtoSend(object):
 
 
     def sendAgentCancelMovement(self):
+        """
 
+        The agent interrupts whatever movement it's currently executing.
+
+        """
         unit = MsgObject()
 
         id = random.randrange(0, RAND_MAX)
@@ -242,7 +393,19 @@ class AnnarProtoSend(object):
         return id
 
     def sendInteractionID(self, objectID):
+        """
 
+        Interact with an object with the given ID. The type of interaction should be specified
+        and implemented in the VR itself.
+        Message name: MsgAgentInteractionID
+
+        NOTE: Not tested yet.
+
+        Arguments:
+            objectID: Int32, the value to identify the target object. The mapping value to 
+            unity object depends on the current scenario.
+
+        """
         unit = MsgObject()
 
         id = random.randrange(0, RAND_MAX)
@@ -258,7 +421,22 @@ class AnnarProtoSend(object):
 
 
     def sendInteractionPos(self, targetX, targetY):
+        """
 
+        Interact with an object at a given position, specified in the viewfield coordinate 
+        system of the left eye. Coordinate 0/0 is in the upper left corner. The type of
+        interaction should be specified and implemented in the VR itself.
+        Message name: MsgAgentInteractionPos
+
+        NOTE: Not tested yet.
+
+        Arguments:
+            targetX: Float value, the x coordinate of the position in the coordinate system 
+            of the left eye.
+            targetY: Float value, the y coordinate of the position in the coordinate system 
+            of the left eye.
+
+        """
         unit = MsgObject()
 
         id = random.randrange(0, RAND_MAX)
@@ -274,7 +452,11 @@ class AnnarProtoSend(object):
         return id
 
     def sendStopSync(self):
+        """
 
+        NOTE: NOT TESTED YET.
+
+        """
         unit = MsgObject()
 
         id = random.randrange(0, RAND_MAX)
@@ -291,8 +473,9 @@ class AnnarProtoSend(object):
         ## END messages
         #####################
 
-    # start thread for main loop
+
     def start(self):
+        """ Starts a thread for the sending loop. """
 
         if self.done:
 
@@ -300,8 +483,9 @@ class AnnarProtoSend(object):
             self.thread = threading.Thread(target=self.mainLoop)
             self.thread.start()
 
-    # stop the main loop thread
+
     def stop(self, wait):
+        """ Stops the thread for the receiving loop. """
 
         if not self.done:
 
@@ -309,9 +493,9 @@ class AnnarProtoSend(object):
             if wait:
                 self.thread.join()
 
-    # main loop executed by a thread
-    # objects from the queue are serialized and sent to the server
+
     def mainLoop(self):
+        """ Loop function to serialize and send messages from the queue, to be executed by a thread. """
 
         while not self.done:
 
@@ -326,8 +510,17 @@ class AnnarProtoSend(object):
                 print "ERROR(AnnarProtoSend): FAILED SENDING MESSAGE"
                 raise
 
-    # a protobuf message object if serialized to a string and is sent to the server after a 4 byte header containing the length of the message
+
     def serializeAndSend(self, unit):
+        """
+
+        Serializes a protobuf message object to a string and sends it to the server together
+        with a 4 byte header encoding the length of the message.
+
+        Arguments:
+            unit: Protobuf message object.
+
+        """
 
         out = unit.SerializeToString()
         length = len(out)
@@ -347,8 +540,9 @@ class AnnarProtoSend(object):
         else:
             self.socketAgent.sendall(data)
 
-    # simple function to print the data
+
     def printBuffer(self, data):
+        """ Simple function to print the data. """
 
         print data
 
