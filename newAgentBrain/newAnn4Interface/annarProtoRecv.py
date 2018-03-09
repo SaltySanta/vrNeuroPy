@@ -166,9 +166,9 @@ class AnnarProtoReceive(object):
             targetX: Float32, the X-coordinate of the agent.
             targetY: Float32, the Y-coordinate of the agent.
             targetZ: Float32, the Z-coordinate of the agent.
-            targetRotationX: Float32, the X-coordinate of the agent’s rotation in the world.
-            targetRotationY: Float32, the Y-coordinate of the agent’s rotation in the world.
-            targetRotationZ: Float32, the Z-coordinate of the agent’s rotation in the world.
+            targetRotationX: Float32, the X-coordinate of the agent's rotation in the world.
+            targetRotationY: Float32, the Y-coordinate of the agent's rotation in the world.
+            targetRotationZ: Float32, the Z-coordinate of the agent's rotation in the world.
             res: Bool, True if retrieval was successful.
 
         """

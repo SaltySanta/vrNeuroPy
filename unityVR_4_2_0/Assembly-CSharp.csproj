@@ -37,10 +37,10 @@
     <Reference Include="System.XML" />
 	<Reference Include="System.Core" />
 	<Reference Include="UnityEngine">
-	  <HintPath>C:/Program Files (x86)/Unity/Editor/Data/Managed/UnityEngine.dll</HintPath>
+	  <HintPath>D:/STUFF/Unity/Editor/Data/Managed/UnityEngine.dll</HintPath>
 	</Reference>
 	<Reference Include="UnityEditor">
-	  <HintPath>C:/Program Files (x86)/Unity/Editor/Data/Managed/UnityEditor.dll</HintPath>
+	  <HintPath>D:/STUFF/Unity/Editor/Data/Managed/UnityEditor.dll</HintPath>
 	</Reference>
   </ItemGroup>
   <ItemGroup>
@@ -64,6 +64,8 @@
      <Compile Include="Assets\Scripts\ChildrensRoomBehaviorScript.cs" />
      <Compile Include="Assets\Scripts\ControllerCollider.cs" />
      <Compile Include="Assets\Scripts\DataShare\cConfiguration.cs" />
+     <Compile Include="Assets\Scripts\DemoAgentScript.cs" />
+     <Compile Include="Assets\Scripts\DemoBehaviourScript.cs" />
      <Compile Include="Assets\Scripts\DestroyObject.cs" />
      <Compile Include="Assets\Scripts\FiveObjectsAtTableAgent.cs" />
      <Compile Include="Assets\Scripts\FiveObjectsAtTableBehavior.cs" />
@@ -109,6 +111,8 @@
      <Compile Include="Assets\Scripts\MyLearningroomBehaviorScript.cs" />
      <Compile Include="Assets\Scripts\SimpleNet.cs" />
      <Compile Include="Assets\Scripts\SmoothFollow.cs" />
+     <Compile Include="Assets\Scripts\SpatialCognitionAgentScript.cs" />
+     <Compile Include="Assets\Scripts\SpatialCognitionBehaviourScript.cs" />
      <Compile Include="Assets\Scripts\Spider1.cs" />
      <Compile Include="Assets\Scripts\SpiderMove.cs" />
      <Compile Include="Assets\Scripts\TestObjectAgentScript.cs" />

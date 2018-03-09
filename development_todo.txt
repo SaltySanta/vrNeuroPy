@@ -1,0 +1,3 @@
+- test and document untested sending and receiving functions
+- test and document syncronization protocol
+- implement grasping functionality for agent Lerpz

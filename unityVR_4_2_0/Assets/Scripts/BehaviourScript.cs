@@ -314,7 +314,7 @@ public partial class BehaviourScript : MonoBehaviour
 		for(int i = 0; i < agents.Length; i++)
 		{
 			agentScripts[i] = agents[i].GetComponent<T>();
-			T curAgentScript = (T)agentScripts[i];	 
+			T curAgentScript = (T)agentScripts[i];
 			curAgentScript.InitializeFromConfiguration( config, GetLocalIP(), agentScripts[i].AgentID );		
         	//Do NOT call agentScripts [i].AgentReset (), here this should be done at runtime (see AgentScript::update() )
 		}
@@ -345,7 +345,6 @@ public partial class BehaviourScript : MonoBehaviour
 		
 	        //load configfile
 	        config = new cConfiguration(ConfigFileName);
-			
 			string  localIP = GetLocalIP();
 			
 	        Debug.Log("Local IP: " + localIP);

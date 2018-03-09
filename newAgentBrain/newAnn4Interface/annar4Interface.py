@@ -98,8 +98,7 @@ def waitForExec(annarInterface, id, timeout = -1):
     ret = False
     actionState = 0
         
-    if timeout == -1:  
-    Annar4Interface class, used to communicate with the according SimpleNetwork API for Unity.
+    if timeout == -1:
         while actionState == 0:
             ret = annarInterface.checkActionExecState(id)
             if ret:
@@ -121,7 +120,7 @@ def waitForExec(annarInterface, id, timeout = -1):
 
         return actionState
 
-# 
+
 def timeout_loop(self):
     """ Loop function executed by a thread, which terminates object if a given timeout is exceeded. """
 
@@ -218,7 +217,7 @@ class Annar4Interface(object):
                 self.socketVR = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 #timeval = struct.pack('ll', 1, 0)
                 #self.socketVR.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, timeval)
-                self.socketVR.settimeout(1.0)
+                self.socketVR.settimeout(5.0)
                 self.socketVR.connect((srv_addr, remotePortNo))
             except socket.error as e:
                 print "ERROR CONNECTING: " + str(e)
@@ -233,8 +232,8 @@ class Annar4Interface(object):
             self.socketAgent = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             #timeval = struct.pack('ll', 1, 0)
             #self.socketAgent.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, timeval)
-            self.socketAgent.settimeout(1.0)
-            self.socketAgent.connect((srv_addrabort_signal, remotePortNo + agentNo + 1))
+            self.socketAgent.settimeout(5.0)
+            self.socketAgent.connect((srv_addr, remotePortNo + agentNo + 1))
         except socket.error as e:
             print "ERROR CONNECTING: " + str(e)
             sys.exit(1)
@@ -414,9 +413,9 @@ class Annar4Interface(object):
                 gridSensorDataX: Float32, the X-coordinate of the agent.
                 gridSensorDataY: Float32, the Y-coordinate of the agent.
                 gridSensorDataZ: Float32, the Z-coordinate of the agent.
-                gridSensorDataRotationX: Float32, the X-coordinate of the agent’s rotation in the world.
-                gridSensorDataRotationY: Float32, the Y-coordinate of the agent’s rotation in the world.
-                gridSensorDataRotationZ: Float32, the Z-coordinate of the agent’s rotation in the world.
+                gridSensorDataRotationX: Float32, the X-coordinate of the agent's rotation in the world.
+                gridSensorDataRotationY: Float32, the Y-coordinate of the agent's rotation in the world.
+                gridSensorDataRotationZ: Float32, the Z-coordinate of the agent's rotation in the world.
 
         """
 
@@ -703,7 +702,7 @@ class Annar4Interface(object):
         Message name: MsgAgentMovement
 
         Arguments:
-            degree: Float32, the direction to walk in degree(0 to 360◦). This direction 
+            degree: Float32, the direction to walk in degree(0 to 360). This direction 
             is relative to the world- or global coordinate system.
             distance: Float, the distance to walk.
         
@@ -721,11 +720,11 @@ class Annar4Interface(object):
 
         Arguments:
             panLeft: Float32, the rotation angle of the left eye in horizontal direction 
-            (positive values rotate it leftwards). The view angle range is -30 to +30◦.
+            (positive values rotate it leftwards). The view angle range is -30 to +30.
             panRight: Float32, the rotation angle of the right eye in horizontal direction 
-            (positive values rotate it leftwards). The view angle range is -30 to +30◦.
+            (positive values rotate it leftwards). The view angle range is -30 to +30.
             tilt: Float32, the rotation angle of the left and right eye in vertical direction. 
-            The view angle range is -30 to +30◦.
+            The view angle range is -30 to +30.
         
         """
         print "SEND & WAIT: EyeMovement"

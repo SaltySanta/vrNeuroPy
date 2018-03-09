@@ -1,6 +1,7 @@
 import Queue
 import random
 import sys
+import threading
 
 from annar4Interface import *
 from annarProtoRecv import *
@@ -58,7 +59,7 @@ class AnnarProtoSend(object):
         Message name: MsgAgentMovement
 
         Arguments:
-            degree: Float32, the direction to walk in degree(0 to 360◦). This direction 
+            degree: Float32, the direction to walk in degree(0 to 360). This direction 
             is relative to the world- or global coordinate system.
             distance: Float, the distance to walk.
         
@@ -86,11 +87,11 @@ class AnnarProtoSend(object):
 
         Arguments:
             panLeft: Float32, the rotation angle of the left eye in horizontal direction 
-            (positive values rotate it leftwards). The view angle range is -30 to +30◦.
+            (positive values rotate it leftwards). The view angle range is -30 to +30.
             panRight: Float32, the rotation angle of the right eye in horizontal direction 
-            (positive values rotate it leftwards). The view angle range is -30 to +30◦.
+            (positive values rotate it leftwards). The view angle range is -30 to +30.
             tilt: Float32, the rotation angle of the left and right eye in vertical direction. 
-            The view angle range is -30 to +30◦.
+            The view angle range is -30 to +30.
         
         """
         unit = MsgObject()
